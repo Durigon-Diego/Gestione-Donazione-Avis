@@ -1,0 +1,81 @@
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../helpers/avis_scaffold.dart';
+import '../helpers/operator_session.dart';
+import '../helpers/logger_helper.dart';
+
+/// Page shown when an operator is not active
+class NotActivePage extends StatefulWidget {
+  const NotActivePage({super.key});
+
+  @override
+  State<NotActivePage> createState() => _NotActivePageState();
+}
+
+class _NotActivePageState extends State<NotActivePage> {
+  bool _showContent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    OperatorSession.addListener(_checkRedirect);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
+  }
+
+  @override
+  void dispose() {
+    OperatorSession.removeListener(_checkRedirect);
+    super.dispose();
+  }
+
+  void _checkRedirect() {
+    _showContent = false;
+    if (OperatorSession.currentUserId != null &&
+        OperatorSession.currentUserId ==
+            Supabase.instance.client.auth.currentUser?.id &&
+        OperatorSession.isActive) {
+      logWarning("User '${OperatorSession.name}' is not inactive, redirecting");
+      final nav =
+          context.mounted ? Navigator.of(context) : navigatorKey.currentState;
+      nav?.pushNamedAndRemoveUntil('/donation', (_) => false);
+    } else {
+      _showContent = true;
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isAdmin = OperatorSession.isAdmin;
+
+    return !_showContent
+        ? const AvisScaffold(title: '', body: SizedBox.shrink())
+        : AvisScaffold(
+            title: 'Utente non attivo',
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.warning_amber_rounded,
+                        size: 60, color: Colors.red),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Utente non attivo',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    if (!isAdmin)
+                      const Text(
+                        'Contattare un amministratore per abilitare l\'accesso.',
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+  }
+}

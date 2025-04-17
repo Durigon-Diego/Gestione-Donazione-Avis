@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "dart.flutterSdkPath": "/home/uccio/flutter",
+    "dart.analysisExcludedFolders": ["build"]
+  }
+}
+
