@@ -18,7 +18,7 @@ jobs:
       - name: Set up Flutter
         uses: flutter-actions/setup-flutter@v2
         with:
-          flutter-version: '3.29.3'
+          version: '3.29.3'
           cache: true
 
       - name: Cache Flutter dependencies
