@@ -1,16 +1,79 @@
-# avis_donor_app
+# Gestione Donazione AVIS
 
-A new Flutter project.
+**Gestione Donazione AVIS** è un'app Flutter multipiattaforma pensata per semplificare e digitalizzare la gestione dei donatori AVIS durante le giornate di donazione.  
+L'app consente agli operatori di accedere con autenticazione sicura, gestire in tempo reale le fasi operative, e visualizzare dati essenziali in modo efficiente e organizzato.
 
-## Getting Started
+## ✨ Funzionalità principali
 
-This project is a starting point for a Flutter application.
+- Autenticazione operatori tramite Supabase
+- Interfaccia in italiano con localizzazione
+- Gestione delle fasi operative:
+  - Ingresso
+  - Accettazione
+  - Visita Medica
+  - Donazione
+- Interfaccia amministratore:
+  - Gestione operatori
+  - Gestione giornate di donazione
+- Sincronizzazione in tempo reale
+- Supporto per Android, iOS e Web
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Tecnologie utilizzate
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- [Flutter](https://flutter.dev/) 3.24+
+- [Supabase](https://supabase.com/) (Auth, Database, Policies)
+- `flutter_dotenv` per la gestione sicura delle variabili ambiente
+- `shared_preferences` per la persistenza locale
+- Logging con `dart:developer`
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## ⚙️ Setup del progetto
+
+1. **Clona il repository**  
+   ```bash
+   git clone git@github.com:TUO_USERNAME/avis-donor-app.git
+   cd avis-donor-app
+   ```
+
+2. **Installa le dipendenze**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Configura le variabili ambiente**
+
+   Copia il file `.env_template` e compilalo con i dati richiesti:
+
+   ```bash
+   cp .env_template .env
+   ```
+
+4. **Avvia l'app**
+   ```bash
+   flutter run
+   ```
+
+## 📁 Struttura del progetto
+
+| Cartella           | Contenuto                                       |
+|--------------------|-------------------------------------------------|
+| `lib/`             | Codice principale dell'app                      |
+| `lib/pages/`       | Schermate per ciascuna sezione dell'app         |
+| `lib/helpers/`     | Temi, scaffolds, logging e componenti riutili   |
+| `assets/fonts/`    | Font personalizzati                             |
+
+## 🧪 Esecuzione dei test
+
+```bash
+flutter test
+```
+
+## 📝 Licenza
+
+Questo progetto è distribuito sotto licenza **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+Ciò significa che chiunque utilizzi, modifichi o distribuisca il software, anche tramite rete (es. come servizio), è tenuto a rendere disponibile il codice sorgente modificato secondo i termini della licenza.
+
+Per maggiori informazioni: [https://www.gnu.org/licenses/agpl-3.0.html](https://www.gnu.org/licenses/agpl-3.0.html)
+
+---
+
+> Progetto sviluppato per supportare l’efficienza operativa delle giornate di donazione AVIS.
