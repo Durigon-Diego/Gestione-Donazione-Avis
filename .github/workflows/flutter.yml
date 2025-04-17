@@ -20,8 +20,20 @@ jobs:
         with:
           flutter-version: '3.29.3'
 
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Create .env file from template
+        run: cp .env_template .env
 
       - name: Analyze Dart code
         run: flutter analyze
