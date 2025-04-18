@@ -2,28 +2,19 @@ import 'package:flutter/material.dart'; import 'package:flutter_test/flutter_tes
 
 class MockSupabaseClient extends Mock implements SupabaseClient {} class MockAuth extends Mock implements GoTrueClient {} class MockSession extends Mock implements Session {} class MockUser extends Mock implements User {} class FakeAuthException extends Fake implements AuthException { @override final String message; @override final String statusCode; FakeAuthException(this.message, this.statusCode); }
 
-void main() {
-  setUpAll(() async {
-    await Supabase.initialize(
-      url: 'http://localhost:54321',
-      anonKey: 'test_key',
-    );
-  });
+void main() { TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockSupabaseClient mockClient;
-  late MockAuth mockAuth;
-  late MockSession mockSession;
-  late MockUser mockUser;
+setUpAll(() async {
+  // Initialize Supabase with dummy values
+  await Supabase.initialize( url: 'http://localhost:54321', anonKey: 'test_key', localStorage: const _FakeLocalStorage(), ); });
 
-  setUp(() {
-    registerFallbackValue(FakeAuthException('Fallback', '400'));
-    mockClient = MockSupabaseClient();
-    mockAuth = MockAuth();
-    mockSession = MockSession();
-    mockUser = MockUser();
+late MockSupabaseClient mockClient; late MockAuth mockAuth; late MockSession mockSession; late MockUser mockUser;
 
-    Supabase.instance.client = mockClient;
-  });
+setUp(() { registerFallbackValue(FakeAuthException('Fallback', '400')); mockClient = MockSupabaseClient(); mockAuth = MockAuth(); mockSession = MockSession(); mockUser = MockUser();
+
+Supabase.instance.client = mockClient;
+
+});
 
 testWidgets('renders LoginPage and finds Accedi button', (tester) async { await tester.pumpWidget(const MaterialApp(home: LoginPage())); expect(find.text('Accedi'), findsOneWidget); });
 
@@ -101,4 +92,14 @@ expect(
 );
 
 }); }
+
+class _FakeLocalStorage extends LocalStorage { const _FakeLocalStorage();
+
+@override Future<void> removeItem(String key) async {}
+
+@override Future<void> setItem(String key, String value) async {}
+
+@override Future<String?> getItem(String key) async => null;
+
+@override Future<void> clear() async {} }
 
