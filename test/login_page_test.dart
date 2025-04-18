@@ -2,19 +2,28 @@ import 'package:flutter/material.dart'; import 'package:flutter_test/flutter_tes
 
 class MockSupabaseClient extends Mock implements SupabaseClient {} class MockAuth extends Mock implements GoTrueClient {} class MockSession extends Mock implements Session {} class MockUser extends Mock implements User {} class FakeAuthException extends Fake implements AuthException { @override final String message; @override final String statusCode; FakeAuthException(this.message, this.statusCode); }
 
-void main() { late MockSupabaseClient mockClient; late MockAuth mockAuth; late MockSession mockSession; late MockUser mockUser;
+void main() {
+  setUpAll(() async {
+    await Supabase.initialize(
+      url: 'http://localhost:54321',
+      anonKey: 'test_key',
+    );
+  });
 
-setUp(() { 
-  await Supabase.initialize(
-    url: 'https://fake-url.supabase.co',
-    anonKey: 'fake-anon-key',
-  );
-  registerFallbackValue(FakeAuthException('Fallback', '400')); mockClient = MockSupabaseClient(); mockAuth = MockAuth(); mockSession = MockSession(); mockUser = MockUser();
+  late MockSupabaseClient mockClient;
+  late MockAuth mockAuth;
+  late MockSession mockSession;
+  late MockUser mockUser;
 
-// Override Supabase instance with mock
-Supabase.instance.client = mockClient;
+  setUp(() {
+    registerFallbackValue(FakeAuthException('Fallback', '400'));
+    mockClient = MockSupabaseClient();
+    mockAuth = MockAuth();
+    mockSession = MockSession();
+    mockUser = MockUser();
 
-});
+    Supabase.instance.client = mockClient;
+  });
 
 testWidgets('renders LoginPage and finds Accedi button', (tester) async { await tester.pumpWidget(const MaterialApp(home: LoginPage())); expect(find.text('Accedi'), findsOneWidget); });
 
