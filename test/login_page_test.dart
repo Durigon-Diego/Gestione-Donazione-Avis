@@ -4,7 +4,12 @@ class MockSupabaseClient extends Mock implements SupabaseClient {} class MockAut
 
 void main() { late MockSupabaseClient mockClient; late MockAuth mockAuth; late MockSession mockSession; late MockUser mockUser;
 
-setUp(() { registerFallbackValue(FakeAuthException('Fallback', '400')); mockClient = MockSupabaseClient(); mockAuth = MockAuth(); mockSession = MockSession(); mockUser = MockUser();
+setUp(() { 
+  await Supabase.initialize(
+    url: 'https://fake-url.supabase.co',
+    anonKey: 'fake-anon-key',
+  );
+  registerFallbackValue(FakeAuthException('Fallback', '400')); mockClient = MockSupabaseClient(); mockAuth = MockAuth(); mockSession = MockSession(); mockUser = MockUser();
 
 // Override Supabase instance with mock
 Supabase.instance.client = mockClient;
