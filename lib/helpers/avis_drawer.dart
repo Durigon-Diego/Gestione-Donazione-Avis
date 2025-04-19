@@ -3,11 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'avis_theme.dart';
 import 'app_info.dart';
-import 'operator_session.dart';
+import 'operator_session_controller.dart';
 
 /// Drawer riutilizzabile con le sezioni AVIS
 class AvisDrawer extends StatefulWidget {
-  const AvisDrawer({super.key});
+  final OperatorSessionController operatorSession;
+  const AvisDrawer({super.key, required this.operatorSession});
 
   @override
   State<AvisDrawer> createState() => _AvisDrawerState();
@@ -36,12 +37,12 @@ class _AvisDrawerState extends State<AvisDrawer> {
   void initState() {
     super.initState();
     _monitorConnectivity();
-    OperatorSession.addListener(_onSessionChange);
+    widget.operatorSession.addListener(_onSessionChange);
   }
 
   @override
   void dispose() {
-    OperatorSession.removeListener(_onSessionChange);
+    widget.operatorSession.removeListener(_onSessionChange);
     super.dispose();
   }
 
@@ -60,19 +61,20 @@ class _AvisDrawerState extends State<AvisDrawer> {
   }
 
   Future<void> _logout() async {
-    await OperatorSession.logout(context);
+    await widget.operatorSession.logout(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final currentRoute = ModalRoute.of(context)?.settings.name;
 
-    final userName = OperatorSession.name ?? '';
-    final userRole = OperatorSession.isAdmin ? 'Amministratore' : 'Operatore';
+    final userName = widget.operatorSession.name ?? '';
+    final userRole =
+        widget.operatorSession.isAdmin ? 'Amministratore' : 'Operatore';
 
     final drawerItems = [
       DrawerItemData('Gestione Account', Icons.account_circle, '/account'),
-      if (OperatorSession.isActive) ...[
+      if (widget.operatorSession.isActive) ...[
         DrawerItemData('Donazione', Icons.water_drop, '/donation'),
       ] else ...[
         DrawerItemData(
@@ -83,7 +85,7 @@ class _AvisDrawerState extends State<AvisDrawer> {
           overrideColorUnselected: AvisColors.warmGrey,
         ),
       ],
-      if (OperatorSession.isAdmin) ...[
+      if (widget.operatorSession.isAdmin) ...[
         DrawerItemData(
             'Gestione Operatori', Icons.manage_accounts, '/operators'),
         DrawerItemData('Gestione Giornate Donazioni', Icons.calendar_today,
@@ -173,7 +175,7 @@ class _AvisDrawerState extends State<AvisDrawer> {
                   Icons.circle,
                   size: 12,
                   color: isConnected
-                      ? (OperatorSession.isActive
+                      ? (widget.operatorSession.isActive
                           ? AvisColors.green
                           : AvisColors.amber)
                       : AvisColors.red,

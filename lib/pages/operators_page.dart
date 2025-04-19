@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/logger_helper.dart';
 import '../helpers/avis_scaffold.dart';
-import '../helpers/operator_session.dart';
+import '../helpers/operator_session_controller.dart';
 
 class OperatorsPage extends StatefulWidget {
-  const OperatorsPage({super.key});
+  final OperatorSessionController operatorSession;
+  const OperatorsPage({super.key, required this.operatorSession});
 
   @override
   State<OperatorsPage> createState() => _OperatorsPageState();
@@ -17,23 +18,24 @@ class _OperatorsPageState extends State<OperatorsPage> {
   @override
   void initState() {
     super.initState();
-    OperatorSession.addListener(_checkRedirect);
+    widget.operatorSession.addListener(_checkRedirect);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
   }
 
   @override
   void dispose() {
-    OperatorSession.removeListener(_checkRedirect);
+    widget.operatorSession.removeListener(_checkRedirect);
     super.dispose();
   }
 
   void _checkRedirect() {
     _showContent = false;
-    if (OperatorSession.currentUserId != null &&
-        OperatorSession.currentUserId ==
+    if (widget.operatorSession.currentUserId != null &&
+        widget.operatorSession.currentUserId ==
             Supabase.instance.client.auth.currentUser?.id &&
-        !OperatorSession.isAdmin) {
-      logWarning("User '${OperatorSession.name}' is not an admin, redirecting");
+        !widget.operatorSession.isAdmin) {
+      logWarning(
+          "User '${widget.operatorSession.name}' is not an admin, redirecting");
       final nav =
           context.mounted ? Navigator.of(context) : navigatorKey.currentState;
       nav?.pushNamedAndRemoveUntil('/donation', (_) => false);
@@ -46,10 +48,15 @@ class _OperatorsPageState extends State<OperatorsPage> {
   @override
   Widget build(BuildContext context) {
     return !_showContent
-        ? const AvisScaffold(title: '', body: SizedBox.shrink())
-        : const AvisScaffold(
+        ? AvisScaffold(
+            title: '',
+            body: SizedBox.shrink(),
+            operatorSession: widget.operatorSession,
+          )
+        : AvisScaffold(
             title: 'Gestione Operatori',
             body: Center(child: Text('Pagina gestione operatori')),
+            operatorSession: widget.operatorSession,
           );
   }
 }

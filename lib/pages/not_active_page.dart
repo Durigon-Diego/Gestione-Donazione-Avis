@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/avis_scaffold.dart';
-import '../helpers/operator_session.dart';
+import '../helpers/operator_session_controller.dart';
 import '../helpers/logger_helper.dart';
 
 /// Page shown when an operator is not active
 class NotActivePage extends StatefulWidget {
-  const NotActivePage({super.key});
+  final OperatorSessionController operatorSession;
+  const NotActivePage({super.key, required this.operatorSession});
 
   @override
   State<NotActivePage> createState() => _NotActivePageState();
@@ -18,23 +19,24 @@ class _NotActivePageState extends State<NotActivePage> {
   @override
   void initState() {
     super.initState();
-    OperatorSession.addListener(_checkRedirect);
+    widget.operatorSession.addListener(_checkRedirect);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
   }
 
   @override
   void dispose() {
-    OperatorSession.removeListener(_checkRedirect);
+    widget.operatorSession.removeListener(_checkRedirect);
     super.dispose();
   }
 
   void _checkRedirect() {
     _showContent = false;
-    if (OperatorSession.currentUserId != null &&
-        OperatorSession.currentUserId ==
+    if (widget.operatorSession.currentUserId != null &&
+        widget.operatorSession.currentUserId ==
             Supabase.instance.client.auth.currentUser?.id &&
-        OperatorSession.isActive) {
-      logWarning("User '${OperatorSession.name}' is not inactive, redirecting");
+        widget.operatorSession.isActive) {
+      logWarning(
+          "User '${widget.operatorSession.name}' is not inactive, redirecting");
       final nav =
           context.mounted ? Navigator.of(context) : navigatorKey.currentState;
       nav?.pushNamedAndRemoveUntil('/donation', (_) => false);
@@ -46,10 +48,14 @@ class _NotActivePageState extends State<NotActivePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isAdmin = OperatorSession.isAdmin;
+    final bool isAdmin = widget.operatorSession.isAdmin;
 
     return !_showContent
-        ? const AvisScaffold(title: '', body: SizedBox.shrink())
+        ? AvisScaffold(
+            title: '',
+            body: SizedBox.shrink(),
+            operatorSession: widget.operatorSession,
+          )
         : AvisScaffold(
             title: 'Utente non attivo',
             body: Center(
@@ -76,6 +82,7 @@ class _NotActivePageState extends State<NotActivePage> {
                 ),
               ),
             ),
+            operatorSession: widget.operatorSession,
           );
   }
 }

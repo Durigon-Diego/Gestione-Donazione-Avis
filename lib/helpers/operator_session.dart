@@ -1,21 +1,28 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
+import 'operator_session_controller.dart';
 import 'logger_helper.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 /// Centralized operator session store
-class OperatorSession {
-  static String? name;
-  static bool isAdmin = false;
-  static bool isActive = false;
-  static String? currentUserId;
+class OperatorSession with ChangeNotifier implements OperatorSessionController {
+  static final OperatorSession _instance = OperatorSession._internal();
+  factory OperatorSession() => _instance;
+  OperatorSession._internal();
 
-  static final List<VoidCallback> _listeners = [];
-  static RealtimeChannel? _channel;
+  @override
+  String? name;
+  @override
+  bool isAdmin = false;
+  @override
+  bool isActive = false;
+  @override
+  String? currentUserId;
+
+  RealtimeChannel? _channel;
 
   /// Handle Supabase auth state changes
-  static Future<void> handleAuthChange(AuthState data) async {
+  @override
+  Future<void> handleAuthChange(AuthState data) async {
     final event = data.event;
     final session = data.session;
 
@@ -34,7 +41,8 @@ class OperatorSession {
   }
 
   /// Load operator profile from Supabase RPC function
-  static Future<void> loadFromSupabase() async {
+  @override
+  Future<void> loadFromSupabase() async {
     try {
       final result = await Supabase.instance.client
           .rpc('get_my_operator_profile')
@@ -45,7 +53,7 @@ class OperatorSession {
       isAdmin = result['is_admin'] == true;
       isActive = result['active'] == true;
 
-      _notifyListeners();
+      notifyListeners();
 
       logInfo('User "$name" logged: data retrieved');
       _subscribeToOperatorChanges(currentUserId!);
@@ -56,7 +64,7 @@ class OperatorSession {
   }
 
   /// Subscribe to real-time changes on the current operator
-  static void _subscribeToOperatorChanges(String userId) {
+  void _subscribeToOperatorChanges(String userId) {
     _channel?.unsubscribe();
 
     _channel = Supabase.instance.client
@@ -77,16 +85,16 @@ class OperatorSession {
 
             logInfo(
                 'Data changed for user "$name" (was ${payload.oldRecord['name']})');
-            _notifyListeners();
+            notifyListeners();
           },
         )
         .subscribe();
   }
 
   /// Initialize session once if already signed in
-  static Future<void> init() async {
-    Supabase.instance.client.auth.onAuthStateChange
-        .listen(OperatorSession.handleAuthChange);
+  @override
+  Future<void> init() async {
+    Supabase.instance.client.auth.onAuthStateChange.listen(handleAuthChange);
 
     if (Supabase.instance.client.auth.currentSession != null) {
       await loadFromSupabase();
@@ -94,7 +102,8 @@ class OperatorSession {
   }
 
   /// Clear session data
-  static void clear() {
+  @override
+  void clear() {
     name = null;
     isAdmin = false;
     isActive = false;
@@ -102,31 +111,16 @@ class OperatorSession {
     _channel?.unsubscribe();
     _channel = null;
     logInfo('Cleaned current user informations');
-    _notifyListeners();
+    notifyListeners();
   }
 
   /// Sign out and redirect to login
-  static Future<void> logout([BuildContext? context]) async {
+  @override
+  Future<void> logout([BuildContext? context]) async {
     await Supabase.instance.client.auth.signOut();
     final nav = context != null && context.mounted
         ? Navigator.of(context)
         : navigatorKey.currentState;
     nav?.pushNamedAndRemoveUntil('/login', (_) => false);
-  }
-
-  /// Add a listener for session changes
-  static void addListener(VoidCallback listener) {
-    _listeners.add(listener);
-  }
-
-  /// Remove a registered listener
-  static void removeListener(VoidCallback listener) {
-    _listeners.remove(listener);
-  }
-
-  static void _notifyListeners() {
-    for (final listener in _listeners) {
-      listener();
-    }
   }
 }

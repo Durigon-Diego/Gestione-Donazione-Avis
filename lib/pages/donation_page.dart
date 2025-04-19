@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/avis_scaffold.dart';
 import '../helpers/avis_bottom_navigation_bar.dart';
-import '../helpers/operator_session.dart';
+import '../helpers/operator_session_controller.dart';
 
 /// Donation page with bottom navigation and drawer menu
 class DonationPage extends StatefulWidget {
-  const DonationPage({super.key});
+  final OperatorSessionController operatorSession;
+  const DonationPage({super.key, required this.operatorSession});
 
   @override
   State<DonationPage> createState() => _DonationPageState();
@@ -45,23 +46,24 @@ class _DonationPageState extends State<DonationPage> {
   @override
   void initState() {
     super.initState();
-    OperatorSession.addListener(_checkRedirect);
+    widget.operatorSession.addListener(_checkRedirect);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
   }
 
   @override
   void dispose() {
-    OperatorSession.removeListener(_checkRedirect);
+    widget.operatorSession.removeListener(_checkRedirect);
     super.dispose();
   }
 
   void _checkRedirect() {
     _showContent = false;
-    if (OperatorSession.currentUserId != null &&
-        OperatorSession.currentUserId ==
+    if (widget.operatorSession.currentUserId != null &&
+        widget.operatorSession.currentUserId ==
             Supabase.instance.client.auth.currentUser?.id &&
-        !OperatorSession.isActive) {
-      logWarning("User '${OperatorSession.name}' is not active, redirecting");
+        !widget.operatorSession.isActive) {
+      logWarning(
+          "User '${widget.operatorSession.name}' is not active, redirecting");
       final nav =
           context.mounted ? Navigator.of(context) : navigatorKey.currentState;
       nav?.pushNamedAndRemoveUntil('/not_active', (_) => false);
@@ -81,7 +83,11 @@ class _DonationPageState extends State<DonationPage> {
   @override
   Widget build(BuildContext context) {
     return !_showContent
-        ? const AvisScaffold(title: '', body: SizedBox.shrink())
+        ? AvisScaffold(
+            title: '',
+            body: SizedBox.shrink(),
+            operatorSession: widget.operatorSession,
+          )
         : AvisScaffold(
             title: _titles[_selectedIndex],
             body:
@@ -91,6 +97,7 @@ class _DonationPageState extends State<DonationPage> {
               currentIndex: _selectedIndex,
               onTap: _onTabTapped,
             ),
+            operatorSession: widget.operatorSession,
           );
   }
 }

@@ -5,11 +5,12 @@ import 'dart:async';
 import '../helpers/logger_helper.dart';
 import '../helpers/exceptions.dart';
 import '../helpers/avis_theme.dart';
-import '../helpers/operator_session.dart';
+import '../helpers/operator_session_controller.dart';
 
 /// Login page for AVIS operators
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final OperatorSessionController operatorSession;
+  const LoginPage({super.key, required this.operatorSession});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -34,10 +35,11 @@ class _LoginPageState extends State<LoginPage> {
   void _checkRedirect() {
     _showContent = false;
     if (Supabase.instance.client.auth.currentSession != null) {
-      logWarning("User '${OperatorSession.name}' already logged, redirecting");
+      logWarning(
+          "User '${widget.operatorSession.name}' already logged, redirecting");
       final nav =
           context.mounted ? Navigator.of(context) : navigatorKey.currentState;
-      if (OperatorSession.isActive) {
+      if (widget.operatorSession.isActive) {
         nav?.pushNamedAndRemoveUntil('/donation', (_) => false);
       } else {
         nav?.pushNamedAndRemoveUntil('/not_active', (_) => false);
@@ -73,12 +75,12 @@ class _LoginPageState extends State<LoginPage> {
 
       _sessionListener = () {
         // Ignore if the current active user is still the previous one
-        if (OperatorSession.currentUserId != null) {
+        if (widget.operatorSession.currentUserId != null) {
           completer.complete();
         }
       };
 
-      OperatorSession.addListener(_sessionListener!);
+      widget.operatorSession.addListener(_sessionListener!);
 
       // Authenticate with Supabase
       final response = await Supabase.instance.client.auth
@@ -97,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
       await preferences.setString('last_email', email);
 
       if (!mounted) return;
-      if (OperatorSession.isActive) {
+      if (widget.operatorSession.isActive) {
         Navigator.of(context).pushReplacementNamed('/donation');
       } else {
         Navigator.of(context).pushReplacementNamed('/not_active');
@@ -119,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     } finally {
       if (_sessionListener != null) {
-        OperatorSession.removeListener(_sessionListener!);
+        widget.operatorSession.removeListener(_sessionListener!);
         _sessionListener = null;
       }
       setState(() {

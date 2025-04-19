@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'helpers/app_info.dart';
 import 'helpers/logger_helper.dart';
 import 'helpers/avis_theme.dart';
+import 'helpers/operator_session_controller.dart';
 import 'helpers/operator_session.dart';
 import 'pages/not_active_page.dart';
 import 'pages/login_page.dart';
@@ -34,9 +35,10 @@ Future<void> main() async {
         anonKey: appInfo.supabaseKey,
       );
 
-      await OperatorSession.init();
+      final operatorSession = OperatorSession();
+      await operatorSession.init();
 
-      runApp(const AvisDonorApp());
+      runApp(AvisDonorApp(operatorSession: operatorSession));
     } catch (e) {
       logError('Error initializing Supabase', e, StackTrace.current,
           'Initialization');
@@ -47,7 +49,8 @@ Future<void> main() async {
 
 /// Main application widget
 class AvisDonorApp extends StatelessWidget {
-  const AvisDonorApp({super.key});
+  final OperatorSessionController operatorSession;
+  const AvisDonorApp({super.key, required this.operatorSession});
 
   @override
   Widget build(BuildContext context) {
@@ -59,14 +62,20 @@ class AvisDonorApp extends StatelessWidget {
       theme: AvisTheme.light,
       debugShowCheckedModeBanner: false,
       title: appInfo.appName,
-      home: isAuthenticated ? const DonationPage() : const LoginPage(),
+      home: isAuthenticated
+          ? DonationPage(operatorSession: operatorSession)
+          : LoginPage(operatorSession: operatorSession),
       routes: {
-        '/login': (context) => const LoginPage(),
-        '/not_active': (context) => const NotActivePage(),
-        '/donation': (context) => const DonationPage(),
-        '/account': (context) => const AccountPage(),
-        '/operators': (context) => const OperatorsPage(),
-        '/donations_days': (context) => const DonationDaysPage(),
+        '/login': (context) => LoginPage(operatorSession: operatorSession),
+        '/not_active': (context) =>
+            NotActivePage(operatorSession: operatorSession),
+        '/donation': (context) =>
+            DonationPage(operatorSession: operatorSession),
+        '/account': (context) => AccountPage(operatorSession: operatorSession),
+        '/operators': (context) =>
+            OperatorsPage(operatorSession: operatorSession),
+        '/donations_days': (context) =>
+            DonationDaysPage(operatorSession: operatorSession),
       },
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
