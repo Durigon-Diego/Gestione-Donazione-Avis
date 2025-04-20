@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/avis_scaffold.dart';
+import '../helpers/app_info_controller.dart';
 import '../helpers/operator_session_controller.dart';
 import '../helpers/logger_helper.dart';
 
 /// Page shown when an operator is not active
 class NotActivePage extends StatefulWidget {
+  final AppInfoController appInfo;
   final OperatorSessionController operatorSession;
-  const NotActivePage({super.key, required this.operatorSession});
+  const NotActivePage({
+    super.key,
+    required this.appInfo,
+    required this.operatorSession,
+  });
 
   @override
   State<NotActivePage> createState() => _NotActivePageState();
@@ -52,11 +58,14 @@ class _NotActivePageState extends State<NotActivePage> {
 
     return !_showContent
         ? AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: '',
             body: SizedBox.shrink(),
-            operatorSession: widget.operatorSession,
           )
         : AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: 'Utente non attivo',
             body: Center(
               child: Padding(
@@ -82,7 +91,6 @@ class _NotActivePageState extends State<NotActivePage> {
                 ),
               ),
             ),
-            operatorSession: widget.operatorSession,
           );
   }
 }

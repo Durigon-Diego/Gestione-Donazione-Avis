@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'avis_theme.dart';
-import 'app_info.dart';
+import 'app_info_controller.dart';
 import 'operator_session_controller.dart';
 
 /// Drawer riutilizzabile con le sezioni AVIS
 class AvisDrawer extends StatefulWidget {
+  final AppInfoController appInfo;
   final OperatorSessionController operatorSession;
-  const AvisDrawer({super.key, required this.operatorSession});
+  const AvisDrawer({
+    super.key,
+    required this.appInfo,
+    required this.operatorSession,
+  });
 
   @override
   State<AvisDrawer> createState() => _AvisDrawerState();
@@ -93,106 +98,117 @@ class _AvisDrawerState extends State<AvisDrawer> {
       ]
     ];
     return Drawer(
-      child: Column(
-        children: [
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              color: AvisColors.blue,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return CustomScrollView(slivers: [
+            SliverToBoxAdapter(
+              child: UserAccountsDrawerHeader(
+                decoration: const BoxDecoration(
+                  color: AvisColors.blue,
+                ),
+                accountName: Text(userName.isNotEmpty ? userName : '...'),
+                accountEmail: Text(userRole),
+                currentAccountPicture: const CircleAvatar(
+                  child: Icon(Icons.person, size: 40),
+                ),
+              ),
             ),
-            accountName: Text(userName.isNotEmpty ? userName : '...'),
-            accountEmail: Text(userRole),
-            currentAccountPicture: const CircleAvatar(
-              child: Icon(Icons.person, size: 40),
+            SliverList(
+              delegate: SliverChildListDelegate.fixed([
+                ...drawerItems.map((item) {
+                  final selected = currentRoute == item.route;
+                  final color = selected
+                      ? (item.overrideColorSelected ?? AvisColors.green)
+                      : (item.overrideColorUnselected ?? AvisColors.blue);
+                  return ListTile(
+                    leading: Icon(item.icon, color: color),
+                    title: Text(item.title, style: TextStyle(color: color)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (!selected) {
+                        Navigator.of(context).pushReplacementNamed(item.route);
+                      }
+                    },
+                  );
+                }),
+              ]),
             ),
-          ),
-          ...drawerItems.map((item) {
-            final selected = currentRoute == item.route;
-            final color = selected
-                ? (item.overrideColorSelected ?? AvisColors.green)
-                : (item.overrideColorUnselected ?? AvisColors.blue);
-            return ListTile(
-              leading: Icon(item.icon, color: color),
-              title: Text(item.title, style: TextStyle(color: color)),
-              onTap: () {
-                Navigator.pop(context);
-                if (!selected) {
-                  Navigator.of(context).pushReplacementNamed(item.route);
-                }
-              },
-            );
-          }),
-          const Spacer(),
-          ListTile(
-            leading: const Icon(Icons.support_agent, color: AvisColors.blue),
-            title: const Text('Contatti',
-                style: TextStyle(color: AvisColors.blue)),
-            onTap: () {
-              Navigator.pop(context);
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Contatti'),
-                  content:
-                      Text('Per supporto scrivi a: ${appInfo.supportEmail}'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Divider(),
+                  ListTile(
+                    leading:
+                        const Icon(Icons.support_agent, color: AvisColors.blue),
+                    title: const Text('Contatti',
+                        style: TextStyle(color: AvisColors.blue)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Contatti'),
+                          content: Text(
+                              'Per supporto scrivi a: ${widget.appInfo.supportEmail}'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading:
+                        const Icon(Icons.info_outline, color: AvisColors.blue),
+                    title: const Text('Info',
+                        style: TextStyle(color: AvisColors.blue)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      showAboutDialog(
+                        context: context,
+                        applicationName: widget.appInfo.appName,
+                        applicationVersion: widget.appInfo.appVersion,
+                        applicationIcon: const Icon(Icons.water_drop_outlined),
+                        children: [Text(widget.appInfo.appDescription)],
+                      );
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 12.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          size: 12,
+                          color: isConnected
+                              ? (widget.operatorSession.isActive
+                                  ? AvisColors.green
+                                  : AvisColors.amber)
+                              : AvisColors.red,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Stato connessione',
+                            style: AvisTheme.smallTextStyle),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.info_outline, color: AvisColors.blue),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Info su ${appInfo.appName}',
-                    style: const TextStyle(color: AvisColors.blue)),
-                Text('Versione  ${appInfo.appVersion}',
-                    style: AvisTheme.smallTextStyle),
-              ],
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: AvisColors.red),
+                    title: const Text('Logout'),
+                    onTap: _logout,
+                  ),
+                ],
+              ),
             ),
-            onTap: () {
-              Navigator.pop(context);
-              showAboutDialog(
-                context: context,
-                applicationName: appInfo.appName,
-                applicationVersion: appInfo.appVersion,
-                applicationIcon: const Icon(Icons.water_drop_outlined),
-                children: [Text(appInfo.appDescription)],
-              );
-            },
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 12,
-                  color: isConnected
-                      ? (widget.operatorSession.isActive
-                          ? AvisColors.green
-                          : AvisColors.amber)
-                      : AvisColors.red,
-                ),
-                const SizedBox(width: 8),
-                const Text('Stato connessione',
-                    style: AvisTheme.smallTextStyle),
-              ],
-            ),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: AvisColors.red),
-            title: const Text('Logout'),
-            onTap: _logout,
-          ),
-        ],
+          ]);
+        },
       ),
     );
   }

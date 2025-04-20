@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'helpers/app_info.dart';
 import 'helpers/logger_helper.dart';
-import 'helpers/avis_theme.dart';
+import 'helpers/app_info_controller.dart';
+import 'helpers/app_info.dart';
 import 'helpers/operator_session_controller.dart';
 import 'helpers/operator_session.dart';
+import 'helpers/avis_theme.dart';
 import 'pages/not_active_page.dart';
 import 'pages/login_page.dart';
 import 'pages/donation_page.dart';
@@ -19,12 +20,17 @@ Future<void> main() async {
 
   bool initialized = false;
 
+  final appInfo = AppInfo();
+
   try {
     await appInfo.load();
   } catch (e) {
     logError(
         'Error loading env variables', e, StackTrace.current, 'Initialization');
-    runApp(const ErrorApp(error: 'Errore di inizializzazione'));
+    runApp(ErrorApp(
+      error: 'Errore di inizializzazione',
+      appInfo: appInfo,
+    ));
     initialized = true;
   }
 
@@ -38,19 +44,30 @@ Future<void> main() async {
       final operatorSession = OperatorSession();
       await operatorSession.init();
 
-      runApp(AvisDonorApp(operatorSession: operatorSession));
+      runApp(AvisDonorApp(
+        appInfo: appInfo,
+        operatorSession: operatorSession,
+      ));
     } catch (e) {
       logError('Error initializing Supabase', e, StackTrace.current,
           'Initialization');
-      runApp(const ErrorApp(error: 'Errore di connessione'));
+      runApp(ErrorApp(
+        error: 'Errore di connessione',
+        appInfo: appInfo,
+      ));
     }
   }
 }
 
 /// Main application widget
 class AvisDonorApp extends StatelessWidget {
+  final AppInfoController appInfo;
   final OperatorSessionController operatorSession;
-  const AvisDonorApp({super.key, required this.operatorSession});
+  const AvisDonorApp({
+    super.key,
+    required this.appInfo,
+    required this.operatorSession,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -63,19 +80,20 @@ class AvisDonorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: appInfo.appName,
       home: isAuthenticated
-          ? DonationPage(operatorSession: operatorSession)
+          ? DonationPage(appInfo: appInfo, operatorSession: operatorSession)
           : LoginPage(operatorSession: operatorSession),
       routes: {
         '/login': (context) => LoginPage(operatorSession: operatorSession),
         '/not_active': (context) =>
-            NotActivePage(operatorSession: operatorSession),
+            NotActivePage(appInfo: appInfo, operatorSession: operatorSession),
         '/donation': (context) =>
-            DonationPage(operatorSession: operatorSession),
-        '/account': (context) => AccountPage(operatorSession: operatorSession),
+            DonationPage(appInfo: appInfo, operatorSession: operatorSession),
+        '/account': (context) =>
+            AccountPage(appInfo: appInfo, operatorSession: operatorSession),
         '/operators': (context) =>
-            OperatorsPage(operatorSession: operatorSession),
-        '/donations_days': (context) =>
-            DonationDaysPage(operatorSession: operatorSession),
+            OperatorsPage(appInfo: appInfo, operatorSession: operatorSession),
+        '/donations_days': (context) => DonationDaysPage(
+            appInfo: appInfo, operatorSession: operatorSession),
       },
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -92,7 +110,12 @@ class AvisDonorApp extends StatelessWidget {
 /// Widget displayed if initialization fails
 class ErrorApp extends StatelessWidget {
   final String error;
-  const ErrorApp({super.key, required this.error});
+  final AppInfoController appInfo;
+  const ErrorApp({
+    super.key,
+    required this.error,
+    required this.appInfo,
+  });
 
   @override
   Widget build(BuildContext context) {

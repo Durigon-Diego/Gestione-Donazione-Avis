@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/logger_helper.dart';
 import '../helpers/avis_scaffold.dart';
+import '../helpers/app_info_controller.dart';
 import '../helpers/operator_session_controller.dart';
 
 class DonationDaysPage extends StatefulWidget {
+  final AppInfoController appInfo;
   final OperatorSessionController operatorSession;
-  const DonationDaysPage({super.key, required this.operatorSession});
+  const DonationDaysPage({
+    super.key,
+    required this.appInfo,
+    required this.operatorSession,
+  });
 
   @override
   State<DonationDaysPage> createState() => _DonationDaysPageState();
@@ -49,14 +55,16 @@ class _DonationDaysPageState extends State<DonationDaysPage> {
   Widget build(BuildContext context) {
     return !_showContent
         ? AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: '',
             body: SizedBox.shrink(),
-            operatorSession: widget.operatorSession,
           )
         : AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: 'Gestione Donazioni',
             body: Center(child: Text('Pagina gestione giornate di donazione')),
-            operatorSession: widget.operatorSession,
           );
   }
 }

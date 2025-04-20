@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'operator_session_controller.dart';
+import 'app_info_controller.dart';
 import 'avis_drawer.dart';
 import 'avis_bottom_navigation_bar.dart';
 
 /// Reusable Scaffold with AVIS AppBar, Drawer, and optional BottomNavigationBar
 class AvisScaffold extends StatelessWidget {
+  final AppInfoController appInfo;
+  final OperatorSessionController operatorSession;
   final String title;
   final Widget body;
   final AvisBottomNavigationBarData? bottomNavData;
-  final OperatorSessionController operatorSession;
 
   const AvisScaffold({
     super.key,
+    required this.appInfo,
+    required this.operatorSession,
     required this.title,
     required this.body,
-    required this.operatorSession,
     this.bottomNavData,
   });
 
@@ -31,6 +34,7 @@ class AvisScaffold extends StatelessWidget {
         ),
       ),
       drawer: AvisDrawer(
+        appInfo: appInfo,
         operatorSession: operatorSession,
       ),
       body: body,

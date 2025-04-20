@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/logger_helper.dart';
 import '../helpers/avis_scaffold.dart';
+import '../helpers/app_info_controller.dart';
 import '../helpers/operator_session_controller.dart';
 
 class OperatorsPage extends StatefulWidget {
+  final AppInfoController appInfo;
   final OperatorSessionController operatorSession;
-  const OperatorsPage({super.key, required this.operatorSession});
+  const OperatorsPage({
+    super.key,
+    required this.operatorSession,
+    required this.appInfo,
+  });
 
   @override
   State<OperatorsPage> createState() => _OperatorsPageState();
@@ -49,14 +55,16 @@ class _OperatorsPageState extends State<OperatorsPage> {
   Widget build(BuildContext context) {
     return !_showContent
         ? AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: '',
             body: SizedBox.shrink(),
-            operatorSession: widget.operatorSession,
           )
         : AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: 'Gestione Operatori',
             body: Center(child: Text('Pagina gestione operatori')),
-            operatorSession: widget.operatorSession,
           );
   }
 }

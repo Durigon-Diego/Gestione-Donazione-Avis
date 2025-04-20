@@ -1,25 +1,31 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'exceptions.dart';
 import 'logger_helper.dart';
+import 'exceptions.dart';
+import 'app_info_controller.dart';
 
-/// Centralized access to app metadata
-class AppInfo {
-  static final AppInfo _instance = AppInfo._internal();
-
+/// Real implementation of AppInfoController for production
+class AppInfo implements AppInfoController {
+  @override
   late final String appName;
+
+  @override
   late final String appVersion;
+
+  @override
   late final String appDescription;
+
+  @override
   late final String supportEmail;
+
+  @override
   late final String supabaseUrl;
+
+  @override
   late final String supabaseKey;
 
-  AppInfo._internal();
-
-  /// Singleton instance
-  factory AppInfo() => _instance;
-
-  /// Initialize app information
+  /// Loads metadata from package_info and dotenv
+  @override
   Future<void> load() async {
     final info = await PackageInfo.fromPlatform();
     await dotenv.load(fileName: ".env");
@@ -46,7 +52,8 @@ class AppInfo {
     String? supabaseKeyVal = dotenv.env['SUPABASE_ANON_KEY'];
     if (supabaseUrlVal == null || supabaseKeyVal == null) {
       throw LoadException(
-          'Missing SUPABASE_URL or SUPABASE_ANON_KEY values on ".env".');
+        'Missing SUPABASE_URL or SUPABASE_ANON_KEY values on ".env".',
+      );
     }
     supabaseUrl = supabaseUrlVal;
     supabaseKey = supabaseKeyVal;
@@ -54,6 +61,3 @@ class AppInfo {
     logInfo('SUPABASE_ANON_KEY: ${supabaseKey.substring(0, 8)}...');
   }
 }
-
-/// Global access to AppInfo
-final appInfo = AppInfo();

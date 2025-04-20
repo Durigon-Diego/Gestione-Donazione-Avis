@@ -2,13 +2,19 @@ import 'package:avis_donor_app/helpers/logger_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/avis_scaffold.dart';
-import '../helpers/avis_bottom_navigation_bar.dart';
+import '../helpers/app_info_controller.dart';
 import '../helpers/operator_session_controller.dart';
+import '../helpers/avis_bottom_navigation_bar.dart';
 
 /// Donation page with bottom navigation and drawer menu
 class DonationPage extends StatefulWidget {
+  final AppInfoController appInfo;
   final OperatorSessionController operatorSession;
-  const DonationPage({super.key, required this.operatorSession});
+  const DonationPage({
+    super.key,
+    required this.appInfo,
+    required this.operatorSession,
+  });
 
   @override
   State<DonationPage> createState() => _DonationPageState();
@@ -84,11 +90,14 @@ class _DonationPageState extends State<DonationPage> {
   Widget build(BuildContext context) {
     return !_showContent
         ? AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: '',
             body: SizedBox.shrink(),
-            operatorSession: widget.operatorSession,
           )
         : AvisScaffold(
+            appInfo: widget.appInfo,
+            operatorSession: widget.operatorSession,
             title: _titles[_selectedIndex],
             body:
                 _showContent ? _pages[_selectedIndex] : const SizedBox.shrink(),
@@ -97,7 +106,6 @@ class _DonationPageState extends State<DonationPage> {
               currentIndex: _selectedIndex,
               onTap: _onTabTapped,
             ),
-            operatorSession: widget.operatorSession,
           );
   }
 }

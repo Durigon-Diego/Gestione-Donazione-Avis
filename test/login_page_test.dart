@@ -4,7 +4,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donor_app/pages/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'fake_operator_session.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -15,48 +17,6 @@ class MockSession extends Mock implements Session {}
 class MockUser extends Mock implements User {}
 
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}
-
-class FakeOperatorSession extends Fake
-    with ChangeNotifier
-    implements OperatorSessionController {
-  bool _isAdmin = false;
-  bool _isActive = false;
-  String? _userId;
-
-  @override
-  String? get name => 'Fake User';
-
-  @override
-  bool get isAdmin => _isAdmin;
-
-  @override
-  bool get isActive => _isActive;
-
-  @override
-  String? get currentUserId => _userId;
-
-  void setState({required bool active, required bool admin, String? userId}) {
-    _isActive = active;
-    _isAdmin = admin;
-    _userId = userId;
-    notifyListeners();
-  }
-
-  @override
-  void clear() {}
-
-  @override
-  Future<void> handleAuthChange(AuthState data) async {}
-
-  @override
-  Future<void> init() async {}
-
-  @override
-  Future<void> loadFromSupabase() async {}
-
-  @override
-  Future<void> logout([BuildContext? context]) async {}
-}
 
 class FakeRoute extends Fake implements Route<dynamic> {}
 
