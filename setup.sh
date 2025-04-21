@@ -3,9 +3,9 @@
 # Ensure hooks directory exists
 mkdir -p .git/hooks
 
-# Link the prepare-commit-msg hook
-TARGET_HOOK=".git/hooks/prepare-commit-msg"
-SOURCE_HOOK="../../.git-hooks/prepare-commit-msg"
+# Link the pre-commit hook
+TARGET_HOOK=".git/hooks/pre-commit"
+SOURCE_HOOK="../../.git-hooks/pre-commit"
 
 # Remove existing file or symlink
 if [ -e "$TARGET_HOOK" ] || [ -L "$TARGET_HOOK" ]; then

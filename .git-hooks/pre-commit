@@ -4,7 +4,7 @@ set -euo pipefail
 
 readonly FILE="README.md"
 readonly BACKUP="${FILE}_local"
-readonly LOCKFILE=".prepare_commit_msg.lock"
+readonly LOCKFILE=".pre-commit.lock"
 readonly PATTERN="badge::coverage"
 
 # Exit early if already processed
