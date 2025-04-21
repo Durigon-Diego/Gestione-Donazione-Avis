@@ -68,7 +68,8 @@ jobs:
       - name: Extract coverage percentage
         id: coverage
         run: |
-          total=$(lcov --summary lcov.info | grep lines | awk '{print $2}' | sed 's/%//')
+          total=$(lcov --summary coverage/lcov.info | grep lines | awk '{print $2}' | sed 's/%//')
+          echo $total
           echo "coverage=$total" >> $GITHUB_OUTPUT
 
       - name: Determine badge color
