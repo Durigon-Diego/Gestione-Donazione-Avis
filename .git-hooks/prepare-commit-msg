@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -euo pipefail
+
+readonly FILE="README.md"
+readonly BACKUP="${FILE}_local"
+readonly PATTERN="badge::coverage"
+
+[ -f "$FILE" ] || exit 0
+grep -q "$PATTERN" "$FILE" || exit 0
+if ! git ls-files --error-unmatch "$FILE" >/dev/null 2>&1; then
+  echo "[hook] File $FILE is not tracked: cannot restore."
+  exit 0
+fi
+
+if ! git diff --quiet "$FILE"; then
+  echo "[hook] Local changes detected, saving to $BACKUP"
+  cp "$FILE" "$BACKUP"
+  trap 'mv -f "$BACKUP" "$FILE" >/dev/null 2>&1 || true' EXIT
+
+  if git diff --cached --quiet -- "$FILE"; then
+    git restore "$FILE"
+  else
+    git restore --staged --worktree "$FILE"
+  fi
+fi
+
+before_hash=$(git hash-object "$FILE")
+
+sed -i -E "s|(https://[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg[^\n]*$PATTERN)|\1$(date +%Y%m%d-%H%M%S)-$RANDOM\2|" "$FILE"
+
+after_hash=$(git hash-object "$FILE")
+if [ "$before_hash" != "$after_hash" ]; then
+  git add "$FILE"
+  git commit --amend --no-edit
+  echo "[hook] Badge updated and commit amended."
+else
+  echo "[hook] No badge update needed."
+fi

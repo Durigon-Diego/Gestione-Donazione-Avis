@@ -10,6 +10,7 @@
 .svn/
 .metadata
 migrate_working_dir/
+README.md_local
 
 # IntelliJ related
 *.iml
