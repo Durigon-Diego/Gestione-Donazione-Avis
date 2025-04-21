@@ -19,6 +19,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract badge ID from README
         id: badge
