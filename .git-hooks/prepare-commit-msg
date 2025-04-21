@@ -4,7 +4,25 @@ set -euo pipefail
 
 readonly FILE="README.md"
 readonly BACKUP="${FILE}_local"
+readonly LOCKFILE=".prepare_commit_msg.lock"
 readonly PATTERN="badge::coverage"
+
+# Exit early if already processed
+if [ -f "$LOCKFILE" ]; then
+  exit 0
+fi
+
+# Ensure no stale backup exists before proceeding
+if [ -f "$BACKUP" ]; then
+  echo "[hook] Backup file $BACKUP already exists. Aborting to prevent overwrite."
+  exit 1
+fi
+
+# Create lock file
+touch "$LOCKFILE"
+
+# Ensure cleanup on exit: remove lock and restore backup if it exists
+trap '[ -f "$LOCKFILE" ] && rm -f "$LOCKFILE" >/dev/null 2>&1; [ -f "$BACKUP" ] && mv -f "$BACKUP" "$FILE" >/dev/null 2>&1 || true' EXIT
 
 [ -f "$FILE" ] || exit 0
 grep -q "$PATTERN" "$FILE" || exit 0
@@ -16,7 +34,6 @@ fi
 if ! git diff --quiet "$FILE"; then
   echo "[hook] Local changes detected, saving to $BACKUP"
   cp "$FILE" "$BACKUP"
-  trap 'mv -f "$BACKUP" "$FILE" >/dev/null 2>&1 || true' EXIT
 
   if git diff --cached --quiet -- "$FILE"; then
     git restore "$FILE"
@@ -27,7 +44,7 @@ fi
 
 before_hash=$(git hash-object "$FILE")
 
-sed -i -E "s|(https://[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg[^\n]*$PATTERN)|\1$(date +%Y%m%d-%H%M%S)-$RANDOM\2|" "$FILE"
+sed -i -E "s|(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg[^\n]*$PATTERN)|\1$(date +%Y%m%d-%H%M%S)-$RANDOM\2|" "$FILE"
 
 after_hash=$(git hash-object "$FILE")
 if [ "$before_hash" != "$after_hash" ]; then
