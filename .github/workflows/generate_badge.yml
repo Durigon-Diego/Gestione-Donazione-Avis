@@ -15,7 +15,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Download coverage artifact from triggering workflow
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
@@ -90,7 +93,7 @@ jobs:
           label=Coverage
           message="${{ steps.coverage.outputs.coverage }}%"
           color=${{ steps.color.outputs.color }}
-          curl -o gh-pages/coverage/$id.lock \
+          curl -Lo gh-pages/coverage/$id.lock \
             "https://img.shields.io/static/v1?label=$label&message=$message&color=$color&style=flat"
 
       - name: Move .lock to .svg
