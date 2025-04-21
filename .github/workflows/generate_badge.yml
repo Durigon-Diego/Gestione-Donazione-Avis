@@ -1,0 +1,101 @@
+name: Generate Coverage Badge
+
+on:
+  workflow_run:
+    workflows: ["Flutter CI"]
+    types:
+      - completed
+
+jobs:
+  badge:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: Extract badge ID from README
+        id: badge
+        run: |
+          line=$(grep -E 'badge::coverage' README.md || true)
+          if [ -z "$line" ]; then
+            echo "Badge marker not found in README.md"
+            exit 1
+          fi
+          id=$(echo "$line" | grep -oE '[0-9]{8}-[0-9]{6}-[0-9]+')
+          if [ -z "$id" ]; then
+            echo "Invalid badge ID"
+            exit 1
+          fi
+          echo "badge_id=$id" >> $GITHUB_OUTPUT
+
+      - name: Clone gh-pages branch
+        run: |
+          git clone --depth=1 --branch gh-pages https://github.com/${{ github.repository }} gh-pages
+          mkdir -p gh-pages/coverage
+
+      - name: Check if badge or lock file already exists
+        run: |
+          id=${{ steps.badge.outputs.badge_id }}
+          if [ -f gh-pages/coverage/$id.svg ]; then
+            echo "Badge $id.svg already exists"
+            exit 1
+          fi
+          if [ -f gh-pages/coverage/$id.lock ]; then
+            echo "Lock file $id.lock already exists"
+            exit 1
+          fi
+          touch gh-pages/coverage/$id.lock
+
+      - name: Commit lock file
+        run: |
+          cd gh-pages
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add coverage/
+          git commit -m "Lock badge slot ${{ steps.badge.outputs.badge_id }}"
+          git push origin gh-pages
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          total=$(lcov --summary lcov.info | grep lines | awk '{print $2}' | sed 's/%//')
+          echo "coverage=$total" >> $GITHUB_OUTPUT
+
+      - name: Determine badge color
+        id: color
+        run: |
+          cov=${{ steps.coverage.outputs.coverage }}
+          if (( $(echo "$cov < 50" | bc -l) )); then
+            echo "color=red" >> $GITHUB_OUTPUT
+          elif (( $(echo "$cov < 80" | bc -l) )); then
+            echo "color=yellow" >> $GITHUB_OUTPUT
+          else
+            echo "color=brightgreen" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate badge to .lock
+        run: |
+          id=${{ steps.badge.outputs.badge_id }}
+          curl -o gh-pages/coverage/$id.lock \
+            "https://img.shields.io/badge/coverage-${{ steps.coverage.outputs.coverage }}%25-${{ steps.color.outputs.color }}.svg"
+
+      - name: Move .lock to .svg
+        run: |
+          id=${{ steps.badge.outputs.badge_id }}
+          mv gh-pages/coverage/$id.lock gh-pages/coverage/$id.svg
+
+      - name: Commit final badge
+        run: |
+          cd gh-pages
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add coverage/
+          git commit -m "Badge generated for ${{ steps.badge.outputs.badge_id }}"
+          git push origin gh-pages

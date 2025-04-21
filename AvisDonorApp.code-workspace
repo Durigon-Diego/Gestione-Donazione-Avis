@@ -5,8 +5,9 @@
     }
   ],
   "settings": {
-    "dart.flutterSdkPath": "/home/uccio/flutter",
-    "dart.analysisExcludedFolders": ["build"]
+    "dart.flutterSdkPath": "../flutter",
+    "dart.analysisExcludedFolders": [
+      "build"
+    ]
   }
 }
-
