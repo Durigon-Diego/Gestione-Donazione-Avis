@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Download coverage artifact
+      - name: Download coverage artifact from triggering workflow
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
@@ -60,6 +60,7 @@ jobs:
           cd gh-pages
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add coverage/
           git commit -m "Lock badge slot ${{ steps.badge.outputs.badge_id }}"
           git push origin gh-pages
@@ -98,6 +99,7 @@ jobs:
           cd gh-pages
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add coverage/
           git commit -m "Badge generated for ${{ steps.badge.outputs.badge_id }}"
           git push origin gh-pages
