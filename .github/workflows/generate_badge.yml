@@ -10,13 +10,12 @@ jobs:
   badge:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    container:
+      image: uccioduri/ubuntu_lcov:latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install -y lcov
 
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
