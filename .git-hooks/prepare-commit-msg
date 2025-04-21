@@ -49,7 +49,7 @@ sed -i -E "s|(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg[^\n]*
 after_hash=$(git hash-object "$FILE")
 if [ "$before_hash" != "$after_hash" ]; then
   git add "$FILE"
-  git commit --amend --no-edit
+  # git commit --amend --no-edit
   echo "[hook] Badge updated and commit amended."
 else
   echo "[hook] No badge update needed."
