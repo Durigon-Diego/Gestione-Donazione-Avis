@@ -1,14 +1,57 @@
-name: Generate Coverage Badge
+name: Flutter CI & Coverage Report
 
 on:
-  workflow_run:
-    workflows: ["Flutter CI"]
-    types:
-      - completed
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  badge:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  Build and Test App:
+    name: Build and Test Flutter App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: flutter-actions/setup-flutter@v2
+        with:
+          version: '3.29.3'
+          cache: true
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create .env file from template
+        run: cp .env_template .env
+
+      - name: Analyze Dart code
+        run: flutter analyze
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
+  Upload HTML Coverage Report and Badge:
+    name: Publish Coverage Report
+    needs: build
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
       image: uccioduri/ubuntu_lcov:latest
@@ -17,12 +60,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Download coverage artifact from triggering workflow
+      - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract badge ID from README
         id: badge
@@ -44,7 +85,7 @@ jobs:
           git clone --depth=1 --branch gh-pages https://github.com/${{ github.repository }} gh-pages
           mkdir -p gh-pages/coverage
 
-      - name: Check if badge or lock file already exists
+      - name: Check and commit lock file
         run: |
           id=${{ steps.badge.outputs.badge_id }}
           if [ -f gh-pages/coverage/$id.svg ]; then
@@ -55,16 +96,17 @@ jobs:
             echo "Lock file $id.lock already exists"
             exit 1
           fi
+          if [ -d gh-pages/coverage/$id ]; then
+            echo "Coverage directory $id already exists"
+            exit 1
+          fi
           touch gh-pages/coverage/$id.lock
-
-      - name: Commit lock file
-        run: |
           cd gh-pages
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add coverage/
-          git commit -m "Lock badge slot ${{ steps.badge.outputs.badge_id }}"
+          git commit -m "Lock badge slot $id"
           git push origin gh-pages
 
       - name: Extract coverage percentage
