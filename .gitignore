@@ -55,6 +55,9 @@ app.*.map.json
 # Web
 /web/.dart_tool/
 
+# Coverage
+/coverage/
+
 # Environment and secrets
 .env
 .env.*

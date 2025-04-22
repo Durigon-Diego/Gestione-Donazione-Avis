@@ -48,7 +48,7 @@ before_hash=$(git hash-object "$FILE")
 id="$(date +%Y%m%d-%H%M%S)-$RANDOM"
 
 # Update both badge and link target in one substitution using the same ID
-sed -i -E "s|(\[!\[[^\]]+\]\(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg\)\]\(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1${id}\2${id}\3|" "$FILE"
+sed -i -E "s|(\[!\[Coverage\]\()(https://[^/]+\.github\.io/[^/]+/coverage/)([0-9]{8}-[0-9]{6}-[0-9]+)(\.svg\)\]\()\2\3(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1\2${id}\4\2${id}\5|" "$FILE"
 
 after_hash=$(git hash-object "$FILE")
 if [ "$before_hash" != "$after_hash" ]; then
