@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  Build and Test App:
+  Build_and_Test_App:
     name: Build and Test Flutter App
     runs-on: ubuntu-latest
 
@@ -48,9 +48,9 @@ jobs:
           name: coverage-report
           path: coverage/lcov.info
 
-  Upload HTML Coverage Report and Badge:
+  Upload_HTML_Coverage_Report_and_Badge:
     name: Publish Coverage Report
-    needs: build
+    needs: Build_and_Test_App
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
