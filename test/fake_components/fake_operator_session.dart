@@ -29,18 +29,26 @@ class FakeOperatorSession extends Fake
     notifyListeners();
   }
 
-  @override
-  void clear() {}
+  /// Optional test callbacks for behavioral verification
+  void Function() onClear = () {};
+  void Function(AuthState data) onHandleAuthChange = (_) {};
+  void Function() onInit = () {};
+  void Function() onLoadFromSupabase = () {};
+  void Function([BuildContext? context]) onLogout = ([BuildContext? _]) {};
 
   @override
-  Future<void> handleAuthChange(AuthState data) async {}
+  void clear() => onClear();
 
   @override
-  Future<void> init() async {}
+  Future<void> handleAuthChange(AuthState data) async =>
+      onHandleAuthChange(data);
 
   @override
-  Future<void> loadFromSupabase() async {}
+  Future<void> init() async => onInit();
 
   @override
-  Future<void> logout([BuildContext? context]) async {}
+  Future<void> loadFromSupabase() async => onLoadFromSupabase();
+
+  @override
+  Future<void> logout([BuildContext? context]) async => onLogout(context);
 }
