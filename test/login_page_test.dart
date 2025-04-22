@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donor_app/pages/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'fake_operator_session.dart';
+import 'fake_components/fake_operator_session.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

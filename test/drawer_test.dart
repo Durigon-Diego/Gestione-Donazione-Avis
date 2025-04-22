@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:avis_donor_app/helpers/avis_drawer.dart';
-import 'fake_app_info.dart';
-import 'fake_operator_session.dart';
+import 'fake_components/fake_app_info.dart';
+import 'fake_components/fake_operator_session.dart';
 
 void main() {
   setUpAll(() async {
