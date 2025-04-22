@@ -73,7 +73,7 @@ jobs:
             echo "Badge marker not found in README.md"
             exit 1
           fi
-          id=$(echo "$line" | grep -oE '[0-9]{8}-[0-9]{6}-[0-9]+')
+          id=$(echo "$line" | sed -nE 's/.*coverage\/([0-9]{8}-[0-9]{6}-[0-9]+)\.svg.*/\1/p')
           if [ -z "$id" ]; then
             echo "Invalid badge ID"
             exit 1
