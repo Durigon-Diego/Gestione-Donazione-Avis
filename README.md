@@ -1,7 +1,7 @@
 # Gestione Donazione AVIS
 
 ![Flutter CI](https://github.com/Durigon-Diego/Gestione-Donazione-Avis/actions/workflows/flutter.yml/badge.svg)
-[![Coverage](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250422-165257-629.svg)](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250422-165257-629/index.html) <!-- badge::coverage -->
+[![Coverage](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250422-172207-27294.svg)](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250422-172207-27294/index.html) <!-- badge::coverage -->
 
 **Gestione Donazione AVIS** è un'app Flutter multipiattaforma pensata per semplificare e digitalizzare la gestione dei donatori AVIS durante le giornate di donazione.
 L'app consente agli operatori di accedere con autenticazione sicura, gestire in tempo reale le fasi operative, e visualizzare dati essenziali in modo efficiente e organizzato.

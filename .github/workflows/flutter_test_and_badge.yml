@@ -1,4 +1,4 @@
-name: Flutter CI & Coverage Report
+name: Build and Test
 
 on:
   push:
