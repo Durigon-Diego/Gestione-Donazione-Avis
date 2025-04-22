@@ -19,9 +19,4 @@ class FakeAppInfo extends AppInfoController {
 
   @override
   String supabaseKey = 'fake-key';
-
-  @override
-  Future<void> load() async {
-    // No-op for fake implementation
-  }
 }

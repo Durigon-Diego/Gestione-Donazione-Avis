@@ -6,6 +6,4 @@ abstract class AppInfoController {
   String get supportEmail;
   String get supabaseUrl;
   String get supabaseKey;
-
-  Future<void> load();
 }
