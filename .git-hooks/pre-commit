@@ -44,13 +44,16 @@ fi
 
 before_hash=$(git hash-object "$FILE")
 
-sed -i -E "s|(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg[^\n]*$PATTERN)|\1$(date +%Y%m%d-%H%M%S)-$RANDOM\2|" "$FILE"
+# Generate unique ID once
+id="$(date +%Y%m%d-%H%M%S)-$RANDOM"
+
+# Update both badge and link target in one substitution using the same ID
+sed -i -E "s|(\[!\[[^\]]+\]\(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(\.svg\)\]\(https://[^/]+/[^/]+/coverage/)[0-9]{8}-[0-9]{6}-[0-9]+(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1${id}\2${id}\3|" "$FILE"
 
 after_hash=$(git hash-object "$FILE")
 if [ "$before_hash" != "$after_hash" ]; then
   git add "$FILE"
-  # git commit --amend --no-edit
-  echo "[hook] Badge updated and commit amended."
+  echo "[hook] Badge updated and staged for commit."
 else
   echo "[hook] No badge update needed."
 fi

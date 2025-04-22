@@ -10,6 +10,8 @@ jobs:
   badge:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    container:
+      image: uccioduri/ubuntu_lcov:latest
 
     steps:
       - name: Checkout repo
@@ -89,7 +91,7 @@ jobs:
           label=Coverage
           message="${{ steps.coverage.outputs.coverage }}%"
           color=${{ steps.color.outputs.color }}
-          curl -o gh-pages/coverage/$id.lock \
+          curl -Lo gh-pages/coverage/$id.lock \
             "https://img.shields.io/static/v1?label=$label&message=$message&color=$color&style=flat"
 
       - name: Generate HTML report directly in target
