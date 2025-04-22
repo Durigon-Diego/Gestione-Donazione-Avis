@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Download coverage artifact
+      - name: Download coverage artifact from triggering workflow
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
@@ -71,7 +71,6 @@ jobs:
         id: coverage
         run: |
           total=$(lcov --summary lcov.info | grep lines | awk '{print $2}' | sed 's/%//')
-          echo $total
           echo "coverage=$total" >> $GITHUB_OUTPUT
 
       - name: Determine badge color
@@ -95,17 +94,20 @@ jobs:
           curl -Lo gh-pages/coverage/$id.lock \
             "https://img.shields.io/static/v1?label=$label&message=$message&color=$color&style=flat"
 
-      - name: Move .lock to .svg
+      - name: Generate HTML report directly in target
+        run: |
+          id=${{ steps.badge.outputs.badge_id }}
+          mkdir -p gh-pages/coverage/$id
+          genhtml lcov.info --output-directory gh-pages/coverage/$id
+
+      - name: Finalize and commit badge and report
         run: |
           id=${{ steps.badge.outputs.badge_id }}
           mv gh-pages/coverage/$id.lock gh-pages/coverage/$id.svg
-
-      - name: Commit final badge
-        run: |
           cd gh-pages
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add coverage/
-          git commit -m "Badge generated for ${{ steps.badge.outputs.badge_id }}"
+          git commit -m "Badge and report generated for $id"
           git push origin gh-pages

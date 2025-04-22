@@ -1,9 +1,9 @@
 # Gestione Donazione AVIS
 
 ![Flutter CI](https://github.com/Durigon-Diego/Gestione-Donazione-Avis/actions/workflows/flutter.yml/badge.svg)
-![Coverage](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250421-175606-1394.svg) <!-- badge::coverage -->
+[![Coverage](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250421-175606-1394.svg)](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20250421-175606-1394/index.html) <!-- badge::coverage -->
 
-**Gestione Donazione AVIS** è un'app Flutter multipiattaforma pensata per semplificare e digitalizzare la gestione dei donatori AVIS durante le giornate di donazione.  
+**Gestione Donazione AVIS** è un'app Flutter multipiattaforma pensata per semplificare e digitalizzare la gestione dei donatori AVIS durante le giornate di donazione.
 L'app consente agli operatori di accedere con autenticazione sicura, gestire in tempo reale le fasi operative, e visualizzare dati essenziali in modo efficiente e organizzato.
 
 ## ✨ Funzionalità principali
@@ -31,18 +31,23 @@ L'app consente agli operatori di accedere con autenticazione sicura, gestire in 
 
 ## ⚙️ Setup del progetto
 
-1. **Clona il repository**  
+1. **Clona il repository**
    ```bash
    git clone git@github.com:TUO_USERNAME/avis-donor-app.git
    cd avis-donor-app
    ```
 
-2. **Installa le dipendenze**
+2. **Installa l'hook locale**
+   ```bash
+   bash setup.sh
+   ```
+
+3. **Installa le dipendenze**
    ```bash
    flutter pub get
    ```
 
-3. **Configura le variabili ambiente**
+4. **Configura le variabili ambiente**
 
    Copia il file `.env_template` e compilalo con i dati richiesti:
 
@@ -50,7 +55,7 @@ L'app consente agli operatori di accedere con autenticazione sicura, gestire in 
    cp .env_template .env
    ```
 
-4. **Avvia l'app**
+5. **Avvia l'app**
    ```bash
    flutter run
    ```
@@ -80,3 +85,4 @@ Per maggiori informazioni: [https://www.gnu.org/licenses/agpl-3.0.html](https://
 ---
 
 > Progetto sviluppato per supportare l’efficienza operativa delle giornate di donazione AVIS.
+
