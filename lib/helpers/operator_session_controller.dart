@@ -10,9 +10,11 @@ abstract class OperatorSessionController extends ChangeNotifier {
   bool get isActive;
   String? get currentUserId;
 
+  bool get isConnected => currentUserId != null;
+
+  Future<void> init();
   Future<void> handleAuthChange(AuthState data);
   Future<void> loadFromSupabase();
-  Future<void> init();
   void clear();
   Future<void> logout([BuildContext? context]);
 }

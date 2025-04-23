@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:avis_donor_app/pages/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/pages/login_page.dart';
 import 'fake_components/fake_operator_session.dart';
+
+class MockConnectionStatusController extends Mock
+    implements ConnectionStatusController {}
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -48,12 +52,18 @@ void main() {
   late MockSession mockSession;
   late MockUser mockUser;
 
+  late MockConnectionStatusController mockConnectionStatus;
+
   setUp(() {
     registerFallbackValue(FakeAuthException('Fallback', '400'));
     mockClient = MockSupabaseClient();
     mockAuth = MockAuth();
     mockSession = MockSession();
     mockUser = MockUser();
+
+    mockConnectionStatus = MockConnectionStatusController();
+    when(() => mockConnectionStatus.state)
+        .thenReturn(ConnectionStatus.connected);
 
     Supabase.instance.client = mockClient;
   });
@@ -67,7 +77,10 @@ void main() {
       navigatorKey: navigatorKey,
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginPage(operatorSession: fakeSession),
+        '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
+              operatorSession: fakeSession,
+            ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
         '/not_active': (_) => const Scaffold(body: Text('Non Attivo')),
       },
@@ -102,7 +115,10 @@ void main() {
       navigatorObservers: [mockObserver],
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginPage(operatorSession: fakeSession),
+        '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
+              operatorSession: fakeSession,
+            ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
         '/not_active': (_) => const Scaffold(body: Text('Non Attivo')),
       },
@@ -153,6 +169,7 @@ void main() {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
               operatorSession: fakeSession,
             ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
@@ -185,6 +202,7 @@ void main() {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
               operatorSession: fakeSession,
             ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
@@ -217,6 +235,7 @@ void main() {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
               operatorSession: fakeSession,
             ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
@@ -249,7 +268,10 @@ void main() {
       navigatorKey: navigatorKey,
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginPage(operatorSession: fakeSession),
+        '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
+              operatorSession: fakeSession,
+            ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
         '/not_active': (_) => const Scaffold(body: Text('Non Attivo')),
       },
@@ -277,7 +299,10 @@ void main() {
       navigatorKey: navigatorKey,
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginPage(operatorSession: fakeSession),
+        '/': (context) => LoginPage(
+              connectionStatus: mockConnectionStatus,
+              operatorSession: fakeSession,
+            ),
         '/donation': (_) => const Scaffold(body: Text('Donazione')),
         '/not_active': (_) => const Scaffold(body: Text('Non Attivo')),
       },

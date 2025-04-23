@@ -4,7 +4,7 @@ import 'operator_session_controller.dart';
 import 'logger_helper.dart';
 
 /// Centralized operator session store
-class OperatorSession with ChangeNotifier implements OperatorSessionController {
+class OperatorSession extends OperatorSessionController {
   static final OperatorSession _instance = OperatorSession._internal();
   factory OperatorSession() => _instance;
   OperatorSession._internal();
@@ -19,6 +19,16 @@ class OperatorSession with ChangeNotifier implements OperatorSessionController {
   String? currentUserId;
 
   RealtimeChannel? _channel;
+
+  /// Initialize session once if already signed in
+  @override
+  Future<void> init() async {
+    Supabase.instance.client.auth.onAuthStateChange.listen(handleAuthChange);
+
+    if (Supabase.instance.client.auth.currentSession != null) {
+      await loadFromSupabase();
+    }
+  }
 
   /// Handle Supabase auth state changes
   @override
@@ -89,16 +99,6 @@ class OperatorSession with ChangeNotifier implements OperatorSessionController {
           },
         )
         .subscribe();
-  }
-
-  /// Initialize session once if already signed in
-  @override
-  Future<void> init() async {
-    Supabase.instance.client.auth.onAuthStateChange.listen(handleAuthChange);
-
-    if (Supabase.instance.client.auth.currentSession != null) {
-      await loadFromSupabase();
-    }
   }
 
   /// Clear session data

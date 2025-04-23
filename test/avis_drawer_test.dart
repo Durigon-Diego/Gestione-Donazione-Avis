@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
 import 'package:avis_donor_app/helpers/avis_drawer.dart';
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_operator_session.dart';
+
+class MockConnectionStatusController extends Mock
+    implements ConnectionStatusController {}
 
 void main() {
   setUpAll(() async {
@@ -13,6 +18,14 @@ void main() {
       url: 'http://localhost',
       anonKey: 'fake-key',
     );
+  });
+
+  late MockConnectionStatusController mockConnectionStatus;
+
+  setUp(() {
+    mockConnectionStatus = MockConnectionStatusController();
+    when(() => mockConnectionStatus.state)
+        .thenReturn(ConnectionStatus.connected);
   });
 
   group('AvisDrawer', () {
@@ -27,6 +40,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donazione Page'),
@@ -35,6 +49,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Not Active Page'),
@@ -43,6 +58,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Account Page'),
@@ -51,6 +67,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Operators Page'),
@@ -59,6 +76,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donation Days Page'),
@@ -67,7 +85,10 @@ void main() {
         home: Scaffold(
           appBar: AppBar(),
           drawer: AvisDrawer(
-              appInfo: fakeAppInfo, operatorSession: fakeOperatorSession),
+            appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
+            operatorSession: fakeOperatorSession,
+          ),
           body: const Text('Home'),
         ),
       ));
@@ -106,6 +127,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donazione Page'),
@@ -114,6 +136,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Not Active Page'),
@@ -122,6 +145,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Account Page'),
@@ -130,6 +154,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Operators Page'),
@@ -138,6 +163,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donation Days Page'),
@@ -146,7 +172,10 @@ void main() {
         home: Scaffold(
           appBar: AppBar(),
           drawer: AvisDrawer(
-              appInfo: fakeAppInfo, operatorSession: fakeOperatorSession),
+            appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
+            operatorSession: fakeOperatorSession,
+          ),
           body: const Text('Home'),
         ),
       ));
@@ -199,6 +228,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donazione Page'),
@@ -207,6 +237,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Not Active Page'),
@@ -215,6 +246,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Account Page'),
@@ -223,6 +255,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Operators Page'),
@@ -231,6 +264,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donation Days Page'),
@@ -240,6 +274,7 @@ void main() {
           appBar: AppBar(),
           drawer: AvisDrawer(
             appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
             operatorSession: fakeOperatorSession,
           ),
           body: const Text('Home'),
@@ -280,6 +315,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donazione Page'),
@@ -288,6 +324,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Not Active Page'),
@@ -296,6 +333,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Account Page'),
@@ -304,6 +342,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Operators Page'),
@@ -312,6 +351,7 @@ void main() {
                 appBar: AppBar(),
                 drawer: AvisDrawer(
                   appInfo: fakeAppInfo,
+                  connectionStatus: mockConnectionStatus,
                   operatorSession: fakeOperatorSession,
                 ),
                 body: const Text('Donation Days Page'),
@@ -321,6 +361,7 @@ void main() {
           appBar: AppBar(),
           drawer: AvisDrawer(
             appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
             operatorSession: fakeOperatorSession,
           ),
           body: const Text('Home'),
@@ -374,6 +415,7 @@ void main() {
           appBar: AppBar(),
           drawer: AvisDrawer(
             appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
             operatorSession: fakeOperatorSession,
           ),
           body: const Text('Home'),
@@ -417,6 +459,7 @@ void main() {
           appBar: AppBar(),
           drawer: AvisDrawer(
             appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
             operatorSession: fakeOperatorSession,
           ),
         ),
@@ -442,6 +485,7 @@ void main() {
           appBar: AppBar(),
           drawer: AvisDrawer(
             appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
             operatorSession: fakeOperatorSession,
           ),
         ),
@@ -454,6 +498,12 @@ void main() {
 
       expect(find.text('App di Test'), findsWidgets);
       expect(find.textContaining('Descrizione di test'), findsOneWidget);
+
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('App di Test'), findsNothing);
+      expect(find.textContaining('Descrizione di test'), findsNothing);
     });
 
     testWidgets('invokes logout callback', (tester) async {
@@ -470,6 +520,7 @@ void main() {
           appBar: AppBar(),
           drawer: AvisDrawer(
             appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
             operatorSession: fakeOperatorSession,
           ),
         ),
@@ -481,6 +532,59 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(logoutCalled, isTrue);
+    });
+
+    testWidgets(
+        'reacts to dynamic session changes and handles connectivity loss',
+        (tester) async {
+      final fakeAppInfo = FakeAppInfo();
+      final fakeOperatorSession =
+          FakeOperatorSession(name: 'Mario', isActive: false, isAdmin: false);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          appBar: AppBar(),
+          drawer: AvisDrawer(
+            appInfo: fakeAppInfo,
+            connectionStatus: mockConnectionStatus,
+            operatorSession: fakeOperatorSession,
+          ),
+          body: const Text('Home'),
+        ),
+      ));
+
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mario'), findsOneWidget);
+      expect(find.text('Operatore'), findsOneWidget);
+      expect(find.text('Donazione'), findsOneWidget);
+      expect(find.byIcon(Icons.lock), findsOneWidget);
+      expect(find.text('Gestione Operatori'), findsNothing);
+
+      fakeOperatorSession.setState(active: true);
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.lock), findsNothing);
+      expect(find.byIcon(Icons.water_drop), findsOneWidget);
+
+      fakeOperatorSession.setState(admin: true);
+      await tester.pumpAndSettle();
+      expect(find.text('Gestione Operatori'), findsOneWidget);
+
+      fakeOperatorSession.setState(name: 'Luigi');
+      await tester.pumpAndSettle();
+      expect(find.text('Luigi'), findsOneWidget);
+
+      fakeOperatorSession.setState(admin: false, active: false);
+      await tester.pumpAndSettle();
+      expect(find.text('Gestione Operatori'), findsNothing);
+      expect(find.byIcon(Icons.lock), findsOneWidget);
+
+      // Simula perdita di connessione
+      fakeOperatorSession.setState(active: true);
+      await tester.pumpAndSettle();
+      Supabase.instance.client.auth.signOut();
+      await tester.pumpAndSettle();
     });
   });
 }

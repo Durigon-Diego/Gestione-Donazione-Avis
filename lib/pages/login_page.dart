@@ -5,12 +5,17 @@ import 'dart:async';
 import '../helpers/logger_helper.dart';
 import '../helpers/exceptions.dart';
 import '../helpers/avis_theme.dart';
+import '../helpers/connection_status_controller.dart';
 import '../helpers/operator_session_controller.dart';
 
 /// Login page for AVIS operators
 class LoginPage extends StatefulWidget {
+  final ConnectionStatusController connectionStatus;
   final OperatorSessionController operatorSession;
-  const LoginPage({super.key, required this.operatorSession});
+  const LoginPage(
+      {super.key,
+      required this.connectionStatus,
+      required this.operatorSession});
 
   @override
   State<LoginPage> createState() => _LoginPageState();

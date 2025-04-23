@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../helpers/avis_scaffold.dart';
 import '../helpers/app_info_controller.dart';
+import '../helpers/connection_status_controller.dart';
 import '../helpers/operator_session_controller.dart';
 import '../helpers/avis_bottom_navigation_bar.dart';
 
 /// Donation page with bottom navigation and drawer menu
 class DonationPage extends StatefulWidget {
   final AppInfoController appInfo;
+  final ConnectionStatusController connectionStatus;
   final OperatorSessionController operatorSession;
   const DonationPage({
     super.key,
     required this.appInfo,
+    required this.connectionStatus,
     required this.operatorSession,
   });
 
@@ -91,12 +94,14 @@ class _DonationPageState extends State<DonationPage> {
     return !_showContent
         ? AvisScaffold(
             appInfo: widget.appInfo,
+            connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: '',
             body: SizedBox.shrink(),
           )
         : AvisScaffold(
             appInfo: widget.appInfo,
+            connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: _titles[_selectedIndex],
             body:
