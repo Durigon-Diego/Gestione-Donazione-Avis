@@ -6,9 +6,9 @@ import 'supabase_connection_status.dart';
 
 /// Describes the current combined connection state
 enum ConnectionStatus {
-  disconnected, // 🔴 no internet
-  supabaseOffline, // 🟠 internet ok, supabase unreachable
-  connected, // 🟢 all ok
+  disconnected, // no internet
+  supabaseOffline, // internet ok, supabase unreachable
+  connected, // all ok
 }
 
 /// Provides a high-level connection status by combining:
@@ -43,8 +43,8 @@ class ConnectionStatusController extends ChangeNotifier {
     _evaluate();
   }
 
-  void initSupabaseStatusCheck() {
-    supabaseStatus.init();
+  void initSupabaseStatusCheck(String supabaseURL, String supabaseKey) {
+    supabaseStatus.init(supabaseURL, supabaseKey);
   }
 
   void _evaluate() {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'helpers/logger_helper.dart';
 import 'helpers/app_info_controller.dart';
+import 'helpers/app_info.dart';
 import 'helpers/connection_status_controller.dart';
 import 'helpers/operator_session_controller.dart';
 import 'helpers/operator_session.dart';
@@ -16,14 +16,14 @@ import 'pages/donation_days_page.dart';
 
 /// Main application widget
 class AvisDonorApp extends StatefulWidget {
-  final AppInfoController appInfo;
-  final ConnectionStatusController connectionStatus;
+  final AppInfoController? appInfo;
+  final ConnectionStatusController? connectionStatus;
   final OperatorSessionController? operatorSession;
 
   const AvisDonorApp({
     super.key,
-    required this.appInfo,
-    required this.connectionStatus,
+    this.appInfo,
+    this.connectionStatus,
     this.operatorSession,
   });
 
@@ -32,27 +32,27 @@ class AvisDonorApp extends StatefulWidget {
 }
 
 class _AvisDonorAppState extends State<AvisDonorApp> {
+  late final AppInfoController appInfo;
+  late final ConnectionStatusController connectionStatus;
   late final OperatorSessionController operatorSession;
   bool _connectedOnce = false;
 
   @override
   void initState() {
     super.initState();
+    appInfo = widget.appInfo ?? AppInfo();
+    connectionStatus = widget.connectionStatus ?? ConnectionStatusController();
     operatorSession = widget.operatorSession ?? OperatorSession();
-    widget.connectionStatus.addListener(_handleFirstConnection);
+    connectionStatus.addListener(_handleFirstConnection);
     _handleFirstConnection();
   }
 
   Future<void> _handleFirstConnection() async {
-    if (ConnectionStatus.supabaseOffline == widget.connectionStatus.state) {
-      widget.connectionStatus.removeListener(_handleFirstConnection);
+    if (ConnectionStatus.supabaseOffline == connectionStatus.state) {
+      connectionStatus.removeListener(_handleFirstConnection);
       try {
-        await Supabase.initialize(
-          url: widget.appInfo.supabaseUrl,
-          anonKey: widget.appInfo.supabaseKey,
-        );
-
-        widget.connectionStatus.initSupabaseStatusCheck();
+        connectionStatus.initSupabaseStatusCheck(
+            appInfo.supabaseURL, appInfo.supabaseKey);
 
         await operatorSession.init();
 
@@ -67,7 +67,7 @@ class _AvisDonorAppState extends State<AvisDonorApp> {
   @override
   void dispose() {
     if (!_connectedOnce) {
-      widget.connectionStatus.removeListener(_handleFirstConnection);
+      connectionStatus.removeListener(_handleFirstConnection);
     }
     super.dispose();
   }
@@ -78,38 +78,38 @@ class _AvisDonorAppState extends State<AvisDonorApp> {
       navigatorKey: navigatorKey,
       theme: AvisTheme.light,
       debugShowCheckedModeBanner: false,
-      title: widget.appInfo.appName,
+      title: appInfo.appName,
       home: operatorSession.isConnected
           ? DonationPage(
-              appInfo: widget.appInfo,
-              connectionStatus: widget.connectionStatus,
+              appInfo: appInfo,
+              connectionStatus: connectionStatus,
               operatorSession: operatorSession)
           : LoginPage(
-              connectionStatus: widget.connectionStatus,
+              connectionStatus: connectionStatus,
               operatorSession: operatorSession),
       routes: {
         '/login': (context) => LoginPage(
-            connectionStatus: widget.connectionStatus,
+            connectionStatus: connectionStatus,
             operatorSession: operatorSession),
         '/not_active': (context) => NotActivePage(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
+            appInfo: appInfo,
+            connectionStatus: connectionStatus,
             operatorSession: operatorSession),
         '/donation': (context) => DonationPage(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
+            appInfo: appInfo,
+            connectionStatus: connectionStatus,
             operatorSession: operatorSession),
         '/account': (context) => AccountPage(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
+            appInfo: appInfo,
+            connectionStatus: connectionStatus,
             operatorSession: operatorSession),
         '/operators': (context) => OperatorsPage(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
+            appInfo: appInfo,
+            connectionStatus: connectionStatus,
             operatorSession: operatorSession),
         '/donations_days': (context) => DonationDaysPage(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
+            appInfo: appInfo,
+            connectionStatus: connectionStatus,
             operatorSession: operatorSession),
       },
       localizationsDelegates: const [

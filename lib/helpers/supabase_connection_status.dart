@@ -8,10 +8,13 @@ class SupabaseConnectionStatus extends ChangeNotifier {
   bool _canReach = false;
   bool get canReachSupabase => _canReach;
 
-  void init({SupabaseClient? client}) {
-    client ??= Supabase.instance.client;
+  void init(String supabaseURL, String supabaseKey) async {
+    await Supabase.initialize(
+      url: supabaseURL,
+      anonKey: supabaseKey,
+    );
 
-    final socket = client.realtime;
+    final socket = Supabase.instance.client.realtime;
 
     // Check immediate state in case the socket is already connected
     if (socket.isConnected) {

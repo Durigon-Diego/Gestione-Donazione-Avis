@@ -141,7 +141,7 @@ SUPABASE_ANON_KEY=fake-key
       expect(appInfo.appVersion, '1.2.3');
       expect(appInfo.appDescription, 'Descrizione App');
       expect(appInfo.supportEmail, 'support@example.com');
-      expect(appInfo.supabaseUrl, 'https://fake.supabase.co');
+      expect(appInfo.supabaseURL, 'https://fake.supabase.co');
       expect(appInfo.supabaseKey, 'fake-key');
     });
   });

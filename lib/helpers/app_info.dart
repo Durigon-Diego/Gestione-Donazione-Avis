@@ -19,7 +19,7 @@ class AppInfo implements AppInfoController {
   late final String supportEmail;
 
   @override
-  late final String supabaseUrl;
+  late final String supabaseURL;
 
   @override
   late final String supabaseKey;
@@ -54,9 +54,9 @@ class AppInfo implements AppInfoController {
         'Missing SUPABASE_URL or SUPABASE_ANON_KEY values on "$envFileName".',
       );
     }
-    supabaseUrl = supabaseUrlVal;
+    supabaseURL = supabaseUrlVal;
     supabaseKey = supabaseKeyVal;
-    logInfo('SUPABASE_URL: $supabaseUrl');
+    logInfo('SUPABASE_URL: $supabaseURL');
     logInfo('SUPABASE_ANON_KEY: ${supabaseKey.substring(0, 8)}...');
   }
 }

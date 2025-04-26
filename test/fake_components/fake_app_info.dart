@@ -15,7 +15,7 @@ class FakeAppInfo extends AppInfoController {
   String supportEmail = 'supporto@test.com';
 
   @override
-  String supabaseUrl = 'https://fake.supabase.co';
+  String supabaseURL = 'https://fake.supabase.co';
 
   @override
   String supabaseKey = 'fake-key';
