@@ -1,5 +1,18 @@
 import 'dart:developer' as developer;
 
+/// Logging delegate type
+typedef LogFunction = void Function(
+  String message, {
+  DateTime? time,
+  String name,
+  int level,
+  Object? error,
+  StackTrace? stackTrace,
+});
+
+/// Delegate that actually does the logging
+LogFunction logFunction = developer.log;
+
 /// Logging levels (same as dart:developer conventions)
 const int _levelTrace = 500;
 const int _levelInfo = 800;
@@ -8,7 +21,7 @@ const int _levelError = 1000;
 
 /// Logs an trace message
 void logTrace(String message, {String name = 'trace'}) {
-  developer.log(
+  logFunction(
     message,
     time: DateTime.now(),
     name: name,
@@ -18,7 +31,7 @@ void logTrace(String message, {String name = 'trace'}) {
 
 /// Logs an informational message
 void logInfo(String message, {String name = 'info'}) {
-  developer.log(
+  logFunction(
     message,
     time: DateTime.now(),
     name: name,
@@ -28,7 +41,7 @@ void logInfo(String message, {String name = 'info'}) {
 
 /// Logs a warning message
 void logWarning(String message, {String name = 'warning'}) {
-  developer.log(
+  logFunction(
     message,
     time: DateTime.now(),
     name: name,
@@ -39,7 +52,7 @@ void logWarning(String message, {String name = 'warning'}) {
 /// Logs an error with optional stack trace
 void logError(String message, Object error,
     [StackTrace? stackTrace, String name = 'error']) {
-  developer.log(
+  logFunction(
     message,
     time: DateTime.now(),
     name: name,
