@@ -8,20 +8,30 @@ class FakeOperatorSession extends Fake
     with ChangeNotifier
     implements OperatorSessionController {
   @override
+  String? name;
+
+  @override
   bool isAdmin;
 
   @override
   bool isActive;
 
   @override
-  String? name;
-
-  @override
   String? currentUserId;
 
-  FakeOperatorSession({this.name, this.isActive = true, this.isAdmin = false});
+  FakeOperatorSession({
+    this.name,
+    this.isActive = true,
+    this.isAdmin = false,
+    this.currentUserId,
+  });
 
-  void setState({String? name, bool? active, bool? admin, String? userId}) {
+  void setState({
+    String? name,
+    bool? active,
+    bool? admin,
+    String? userId,
+  }) {
     this.name = name ?? this.name;
     isActive = active ?? isActive;
     isAdmin = admin ?? isAdmin;
@@ -35,6 +45,9 @@ class FakeOperatorSession extends Fake
   void Function() onInit = () {};
   void Function() onLoadFromSupabase = () {};
   void Function([BuildContext? context]) onLogout = ([BuildContext? _]) {};
+
+  @override
+  bool get isConnected => currentUserId != null;
 
   @override
   void clear() => onClear();

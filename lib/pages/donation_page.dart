@@ -1,6 +1,6 @@
-import 'package:avis_donor_app/helpers/logger_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../helpers/logger_helper.dart';
 import '../helpers/avis_scaffold.dart';
 import '../helpers/app_info_controller.dart';
 import '../helpers/connection_status_controller.dart';

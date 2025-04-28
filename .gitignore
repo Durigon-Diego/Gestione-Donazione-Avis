@@ -11,6 +11,8 @@
 .metadata
 migrate_working_dir/
 README.md_local
+SQL/tools
+test/coverage_helper_test.dart
 
 # IntelliJ related
 *.iml

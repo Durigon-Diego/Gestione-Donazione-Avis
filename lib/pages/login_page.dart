@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
 import '../helpers/logger_helper.dart';
 import '../helpers/exceptions.dart';
 import '../helpers/avis_theme.dart';
@@ -12,10 +12,11 @@ import '../helpers/operator_session_controller.dart';
 class LoginPage extends StatefulWidget {
   final ConnectionStatusController connectionStatus;
   final OperatorSessionController operatorSession;
-  const LoginPage(
-      {super.key,
-      required this.connectionStatus,
-      required this.operatorSession});
+  const LoginPage({
+    super.key,
+    required this.connectionStatus,
+    required this.operatorSession,
+  });
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -34,12 +35,23 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
+    widget.connectionStatus.addListener(_onConnectionChange);
     _loadLastEmail();
+  }
+
+  @override
+  void dispose() {
+    widget.connectionStatus.removeListener(_onConnectionChange);
+    super.dispose();
+  }
+
+  void _onConnectionChange() {
+    setState(() {});
   }
 
   void _checkRedirect() {
     _showContent = false;
-    if (Supabase.instance.client.auth.currentSession != null) {
+    if (widget.operatorSession.isConnected) {
       logWarning(
           "User '${widget.operatorSession.name}' already logged, redirecting");
       final nav =
@@ -109,15 +121,20 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         Navigator.of(context).pushReplacementNamed('/not_active');
       }
-    } catch (e) {
-      logError('Login failed', e, StackTrace.current, 'Login');
+    } catch (error, stackTrace) {
+      logError(
+        'Login failed',
+        error,
+        stackTrace,
+        'Login',
+      );
 
       setState(() {
-        if (e is LoginException) {
-          _errorMessage = e.message;
-        } else if (e is AuthException && e.statusCode == '400') {
+        if (error is LoginException) {
+          _errorMessage = error.message;
+        } else if (error is AuthException && error.statusCode == '400') {
           _errorMessage = 'Credenziali errate. Riprova.';
-        } else if (e is AuthException && e.statusCode == '429') {
+        } else if (error is AuthException && error.statusCode == '429') {
           _errorMessage = 'Troppi tentativi. Riprova tra qualche minuto.';
         } else {
           _errorMessage =
@@ -137,52 +154,98 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final connected =
+        widget.connectionStatus.state == ConnectionStatus.connected;
+
+    final (color, label) = switch (widget.connectionStatus.state) {
+      ConnectionStatus.disconnected => (AvisColors.red, 'Nessuna connessione'),
+      ConnectionStatus.supabaseOffline => (
+          AvisColors.amber,
+          'Server non raggiungibile'
+        ),
+      ConnectionStatus.connected => (AvisColors.green, 'Connesso'),
+    };
+
     return !_showContent
         ? const Scaffold(body: SizedBox.shrink())
-        : Scaffold(
-            appBar: AppBar(title: const Text('Accesso Operatore')),
-            body: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(labelText: 'Email'),
-                          keyboardType: TextInputType.emailAddress,
-                          onSubmitted: (_) => _login(),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _passwordController,
-                          decoration:
-                              const InputDecoration(labelText: 'Password'),
-                          obscureText: true,
-                          onSubmitted: (_) => _login(),
-                        ),
-                        const SizedBox(height: 16),
-                        if (_errorMessage != null)
-                          Text(
-                            _errorMessage!,
-                            style: AvisTheme.errorTextStyle,
+        : Stack(
+            children: [
+              Scaffold(
+                appBar: AppBar(title: const Text('Accesso Operatore')),
+                body: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                    controller: _emailController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Email'),
+                                    keyboardType: TextInputType.emailAddress,
+                                    onSubmitted: (_) => _login(),
+                                    enabled: connected && !_loading,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: _passwordController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Password'),
+                                    obscureText: true,
+                                    onSubmitted: (_) => _login(),
+                                    enabled: connected && !_loading,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  if (_errorMessage != null)
+                                    Text(
+                                      _errorMessage!,
+                                      style: AvisTheme.errorTextStyle,
+                                    ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: (_loading || !connected)
+                                        ? null
+                                        : _login,
+                                    child: _loading
+                                        ? const CircularProgressIndicator()
+                                        : const Text('Accedi'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _loading ? null : _login,
-                          child: _loading
-                              ? const CircularProgressIndicator()
-                              : const Text('Accedi'),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.circle, color: color, size: 12),
+                          const SizedBox(width: 8),
+                          Text(label, style: TextStyle(color: color)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              if (!connected)
+                Container(
+                  color: Colors.black45,
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
           );
   }
 }

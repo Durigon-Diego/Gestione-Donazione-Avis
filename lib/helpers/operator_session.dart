@@ -67,8 +67,13 @@ class OperatorSession extends OperatorSessionController {
 
       logInfo('User "$name" logged: data retrieved');
       _subscribeToOperatorChanges(currentUserId!);
-    } catch (e) {
-      logError('Error updating user data', e, StackTrace.current, 'Login');
+    } catch (error, stackTrace) {
+      logError(
+        'Error updating user data',
+        error,
+        stackTrace,
+        'Login',
+      );
       clear();
     }
   }

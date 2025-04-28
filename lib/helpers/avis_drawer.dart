@@ -40,16 +40,18 @@ class _AvisDrawerState extends State<AvisDrawer> {
   @override
   void initState() {
     super.initState();
-    widget.operatorSession.addListener(_onSessionChange);
+    widget.connectionStatus.addListener(_onChange);
+    widget.operatorSession.addListener(_onChange);
   }
 
   @override
   void dispose() {
-    widget.operatorSession.removeListener(_onSessionChange);
+    widget.connectionStatus.removeListener(_onChange);
+    widget.operatorSession.removeListener(_onChange);
     super.dispose();
   }
 
-  void _onSessionChange() {
+  void _onChange() {
     setState(() {});
   }
 
@@ -166,6 +168,8 @@ class _AvisDrawerState extends State<AvisDrawer> {
                     leading: const Icon(Icons.logout, color: AvisColors.red),
                     title: const Text('Logout'),
                     onTap: _logout,
+                    enabled: ConnectionStatus.connected ==
+                        widget.connectionStatus.state,
                   ),
                   AnimatedBuilder(
                     animation: widget.connectionStatus,
@@ -191,7 +195,7 @@ class _AvisDrawerState extends State<AvisDrawer> {
                       };
                       return ListTile(
                         leading: Icon(Icons.circle, color: color),
-                        title: Text(label, style: TextStyle(color: color)),
+                        title: Text(label),
                       );
                     },
                   ),

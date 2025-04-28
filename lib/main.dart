@@ -3,7 +3,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'helpers/logger_helper.dart';
 import 'helpers/app_info_controller.dart';
 import 'helpers/app_info.dart';
-import 'helpers/connection_status_controller.dart';
 import 'helpers/avis_theme.dart';
 import 'avis_donor_app.dart';
 
@@ -17,9 +16,13 @@ Future<void> main() async {
 
   try {
     await appInfo.load();
-  } catch (e) {
+  } catch (error, stackTrace) {
     logError(
-        'Error loading env variables', e, StackTrace.current, 'Initialization');
+      'Error loading env variables',
+      error,
+      stackTrace,
+      'Initialization',
+    );
     runApp(ErrorApp(
       error: 'Errore di inizializzazione',
       appInfo: appInfo,
@@ -29,26 +32,14 @@ Future<void> main() async {
 
   if (!haveError) {
     try {
-      // Create connection controller before Supabase
-      final connectionStatusController = ConnectionStatusController();
-
-      // await Supabase.initialize(
-      //   url: appInfo.supabaseUrl,
-      //   anonKey: appInfo.supabaseKey,
-      // );
-
-      // final operatorSession = OperatorSession();
-      // await operatorSession.init();
-
-      runApp(AvisDonorApp(
-        appInfo: appInfo,
-        connectionStatus: connectionStatusController,
-      ));
-    } catch (e) {
-      // logError('Error initializing Supabase', e, StackTrace.current,
-      //     'Initialization');
+      runApp(AvisDonorApp(appInfo: appInfo));
+    } catch (error, stackTrace) {
       logError(
-          'Error running main app', e, StackTrace.current, 'Initialization');
+        'Error running main app',
+        error,
+        stackTrace,
+        'Initialization',
+      );
       runApp(ErrorApp(
         error: 'Errore di avvio',
         appInfo: appInfo,
