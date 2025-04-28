@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
 import 'package:avis_donor_app/pages/login_page.dart';
 import 'fake_components/fake_connection_status_controller.dart';
 import 'fake_components/fake_operator_session.dart';
@@ -245,13 +246,26 @@ void main() {
 
       await pumpLoginPage(tester, session, settle: false);
 
-      Future<void> verifyFields({required bool enabled}) async {
+      Future<void> verifyState({
+        required bool enabled,
+        required Color expectedColor,
+        required String expectedText,
+      }) async {
         final emailField =
             tester.widget<TextField>(find.byType(TextField).at(0));
         final passwordField =
             tester.widget<TextField>(find.byType(TextField).at(1));
         final accediButton =
             tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final icon = tester.widget<Icon>(find.byType(Icon).first);
+        final textWidget = tester.widget<Text>(
+          find
+              .descendant(
+                of: find.byType(Row),
+                matching: find.byType(Text),
+              )
+              .last,
+        );
 
         expect(emailField.enabled, enabled);
         expect(passwordField.enabled, enabled);
@@ -260,25 +274,45 @@ void main() {
         } else {
           expect(accediButton.onPressed, isNull);
         }
+
+        expect(icon.color, expectedColor);
+        expect(textWidget.data, expectedText);
+        expect(textWidget.style?.color, expectedColor);
       }
 
-      // Disconnected: fields disabled
-      await verifyFields(enabled: false);
+      // Disconnected: fields disabled, red icon, "Nessuna connessione"
+      await verifyState(
+        enabled: false,
+        expectedColor: AvisColors.red,
+        expectedText: 'Nessuna connessione',
+      );
 
       // Change to supabaseOffline
       fakeConnectionStatus.setState(ConnectionStatus.supabaseOffline);
       await tester.pump();
-      await verifyFields(enabled: false);
+      await verifyState(
+        enabled: false,
+        expectedColor: AvisColors.amber,
+        expectedText: 'Server non raggiungibile',
+      );
 
       // Change to connected
       fakeConnectionStatus.setState(ConnectionStatus.connected);
       await tester.pump();
-      await verifyFields(enabled: true);
+      await verifyState(
+        enabled: true,
+        expectedColor: AvisColors.green,
+        expectedText: 'Connesso',
+      );
 
       // Return to disconnected
       fakeConnectionStatus.setState(ConnectionStatus.disconnected);
       await tester.pump();
-      await verifyFields(enabled: false);
+      await verifyState(
+        enabled: false,
+        expectedColor: AvisColors.red,
+        expectedText: 'Nessuna connessione',
+      );
     });
   });
 }
