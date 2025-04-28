@@ -21,6 +21,7 @@ enum ConnectionStatus {
 class ConnectionStatusController extends ChangeNotifier {
   final AppInfoController _appInfo;
   final InternetConnection _internetChecker;
+  final WebSocketChannel Function(Uri) _connectWebSocket;
 
   /// True if there is an internet connection
   bool _hasInternet = false;
@@ -41,9 +42,11 @@ class ConnectionStatusController extends ChangeNotifier {
   /// Timer for periodically checks on supabase
   Timer? _supabaseTimer;
 
-  ConnectionStatusController(
-      {required AppInfoController appInfo, InternetConnection? internetChecker})
-      : _appInfo = appInfo,
+  ConnectionStatusController({
+    required AppInfoController appInfo,
+    InternetConnection? internetChecker,
+    WebSocketChannel Function(Uri)? connectWebSocket,
+  })  : _appInfo = appInfo,
         _internetChecker = internetChecker ??
             InternetConnection.createInstance(
               customCheckOptions: [
@@ -61,7 +64,8 @@ class ConnectionStatusController extends ChangeNotifier {
                         'https://api.thecatapi.com/v1/images/search')),
               ],
               useDefaultOptions: false,
-            );
+            ),
+        _connectWebSocket = connectWebSocket ?? WebSocketChannel.connect;
 
   Future<void> init() async {
     _hasInternet = await (_internetChecker.internetStatus
@@ -90,7 +94,9 @@ class ConnectionStatusController extends ChangeNotifier {
 
     _cancelSupabaseTimer();
 
-    if (_state == ConnectionStatus.supabaseOffline) {
+    if (_state == ConnectionStatus.disconnected) {
+      _canReachSupabase = false;
+    } else if (_state == ConnectionStatus.supabaseOffline) {
       _setRestartSupabaseSocketTimer();
       _restartSupabaseSocket();
     } else if (_state == ConnectionStatus.connected) {
@@ -111,7 +117,7 @@ class ConnectionStatusController extends ChangeNotifier {
         },
       );
 
-      _socket = WebSocketChannel.connect(uri);
+      _socket = _connectWebSocket(uri);
 
       logInfo('Supabase socket created');
 
