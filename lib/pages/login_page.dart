@@ -240,7 +240,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               if (!connected)
                 Container(
-                  color: Colors.black45,
+                  color: AvisColors.overlay,
                   child: const Center(
                     child: CircularProgressIndicator(),
                   ),

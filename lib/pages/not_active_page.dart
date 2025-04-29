@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../helpers/avis_theme.dart';
 import '../helpers/avis_scaffold.dart';
 import '../helpers/app_info_controller.dart';
 import '../helpers/connection_status_controller.dart';
@@ -79,19 +80,19 @@ class _NotActivePageState extends State<NotActivePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.warning_amber_rounded,
-                        size: 60, color: Colors.red),
+                        size: 60, color: AvisColors.red),
                     const SizedBox(height: 16),
                     const Text(
                       'Utente non attivo',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: AvisTheme.errorTextStyle,
                     ),
-                    const SizedBox(height: 12),
-                    if (!isAdmin)
+                    if (!isAdmin) ...{
+                      const SizedBox(height: 12),
                       const Text(
                         'Contattare un amministratore per abilitare l\'accesso.',
                         textAlign: TextAlign.center,
                       ),
+                    }
                   ],
                 ),
               ),

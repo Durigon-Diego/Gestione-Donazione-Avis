@@ -104,8 +104,7 @@ class _DonationPageState extends State<DonationPage> {
             connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: _titles[_selectedIndex],
-            body:
-                _showContent ? _pages[_selectedIndex] : const SizedBox.shrink(),
+            body: _pages[_selectedIndex],
             bottomNavData: AvisBottomNavigationBarData(
               items: _navItems,
               currentIndex: _selectedIndex,
