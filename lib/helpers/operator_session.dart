@@ -9,64 +9,69 @@ class OperatorSession extends OperatorSessionController {
   factory OperatorSession() => _instance;
   OperatorSession._internal();
 
+  String? _name;
+  bool _isAdmin = false;
+  bool _isActive = false;
+  String? _currentUserId;
+
   @override
-  String? name;
+  String? get name => _name;
   @override
-  bool isAdmin = false;
+  bool get isAdmin => _isAdmin;
   @override
-  bool isActive = false;
+  bool get isActive => _isActive;
   @override
-  String? currentUserId;
+  String? get currentUserId => _currentUserId;
 
   RealtimeChannel? _channel;
 
   /// Initialize session once if already signed in
   @override
   Future<void> init() async {
-    Supabase.instance.client.auth.onAuthStateChange.listen(handleAuthChange);
+    Supabase.instance.client.auth.onAuthStateChange.listen(_handleAuthChange);
 
     if (Supabase.instance.client.auth.currentSession != null) {
-      await loadFromSupabase();
+      await _loadFromSupabase();
+    } else {
+      _clear();
     }
   }
 
   /// Handle Supabase auth state changes
-  @override
-  Future<void> handleAuthChange(AuthState data) async {
+  Future<void> _handleAuthChange(AuthState data) async {
     final event = data.event;
     final session = data.session;
 
     if (session == null || event == AuthChangeEvent.signedOut) {
       logInfo('User not logged');
-      clear();
+      _clear();
       return;
-    } else if (currentUserId != session.user.id) {
-      logInfo('User changed: "$currentUserId" <> "${session.user.id}"');
-      clear();
+    } else if (_currentUserId != session.user.id) {
+      logInfo('User changed: "$_currentUserId" <> "${session.user.id}"');
+      _clear();
     }
     if (event == AuthChangeEvent.signedIn ||
         event == AuthChangeEvent.tokenRefreshed) {
-      await loadFromSupabase();
+      await _loadFromSupabase();
     }
   }
 
   /// Load operator profile from Supabase RPC function
-  @override
-  Future<void> loadFromSupabase() async {
+  Future<void> _loadFromSupabase() async {
     try {
       final result = await Supabase.instance.client
           .rpc('get_my_operator_profile')
           .single();
 
-      currentUserId = Supabase.instance.client.auth.currentUser?.id;
-      name = result['name'] as String?;
-      isAdmin = result['is_admin'] == true;
-      isActive = result['active'] == true;
+      _currentUserId = Supabase.instance.client.auth.currentUser?.id;
+      _name = result['name'] as String?;
+      _isAdmin = result['is_admin'] == true;
+      _isActive = result['active'] == true;
 
       notifyListeners();
 
-      logInfo('User "$name" logged: data retrieved');
-      _subscribeToOperatorChanges(currentUserId!);
+      logInfo('User "$_name" logged: data retrieved');
+      _subscribeToOperatorChanges(_currentUserId!);
     } catch (error, stackTrace) {
       logError(
         'Error updating user data',
@@ -74,7 +79,7 @@ class OperatorSession extends OperatorSessionController {
         stackTrace,
         'Login',
       );
-      clear();
+      _clear();
     }
   }
 
@@ -94,12 +99,12 @@ class OperatorSession extends OperatorSessionController {
             value: userId,
           ),
           callback: (payload) {
-            name = payload.newRecord['name'] as String?;
-            isAdmin = payload.newRecord['is_admin'] == true;
-            isActive = payload.newRecord['active'] == true;
+            _name = payload.newRecord['name'] as String?;
+            _isAdmin = payload.newRecord['is_admin'] == true;
+            _isActive = payload.newRecord['active'] == true;
 
             logInfo(
-                'Data changed for user "$name" (was ${payload.oldRecord['name']})');
+                'Data changed for user "$_name" (was ${payload.oldRecord['name']})');
             notifyListeners();
           },
         )
@@ -107,12 +112,11 @@ class OperatorSession extends OperatorSessionController {
   }
 
   /// Clear session data
-  @override
-  void clear() {
-    name = null;
-    isAdmin = false;
-    isActive = false;
-    currentUserId = null;
+  void _clear() {
+    _name = null;
+    _isAdmin = false;
+    _isActive = false;
+    _currentUserId = null;
     _channel?.unsubscribe();
     _channel = null;
     logInfo('Cleaned current user informations');

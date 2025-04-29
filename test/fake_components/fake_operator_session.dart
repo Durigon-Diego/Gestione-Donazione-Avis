@@ -4,9 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donor_app/helpers/operator_session_controller.dart';
 
 /// Fake implementation of OperatorSessionController for tests
-class FakeOperatorSession extends Fake
-    with ChangeNotifier
-    implements OperatorSessionController {
+class FakeOperatorSession extends OperatorSessionController {
   @override
   String? name;
 
@@ -47,20 +45,7 @@ class FakeOperatorSession extends Fake
   void Function([BuildContext? context]) onLogout = ([BuildContext? _]) {};
 
   @override
-  bool get isConnected => currentUserId != null;
-
-  @override
-  void clear() => onClear();
-
-  @override
-  Future<void> handleAuthChange(AuthState data) async =>
-      onHandleAuthChange(data);
-
-  @override
   Future<void> init() async => onInit();
-
-  @override
-  Future<void> loadFromSupabase() async => onLoadFromSupabase();
 
   @override
   Future<void> logout([BuildContext? context]) async => onLogout(context);

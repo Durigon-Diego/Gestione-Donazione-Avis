@@ -1,9 +1,11 @@
+// ignore_for_file: all
 import 'dart:io';
 
 void main() {
   final outputFile = File('test/coverage_helper_test.dart');
   final buffer = StringBuffer();
 
+  buffer.writeln('// ignore_for_file: all');
   buffer.writeln('// coverage:ignore-file');
   buffer.writeln('// GENERATED FILE. DO NOT EDIT MANUALLY.\n');
   buffer.writeln('import \'package:flutter_test/flutter_test.dart\';');

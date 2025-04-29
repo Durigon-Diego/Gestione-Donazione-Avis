@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -13,8 +12,5 @@ abstract class OperatorSessionController extends ChangeNotifier {
   bool get isConnected => currentUserId != null;
 
   Future<void> init();
-  Future<void> handleAuthChange(AuthState data);
-  Future<void> loadFromSupabase();
-  void clear();
   Future<void> logout([BuildContext? context]);
 }
