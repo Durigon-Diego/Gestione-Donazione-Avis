@@ -37,6 +37,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Generate unique ID once
+readonly ID="$(date +%Y%m%d-%H%M%S)-$RANDOM"
+
 for FILE in "${FILES_TO_UPDATE[@]}"; do
   BACKUP="${FILE}_local"
 
@@ -60,11 +63,8 @@ for FILE in "${FILES_TO_UPDATE[@]}"; do
 
   before_hash=$(git hash-object "$FILE")
 
-  # Generate unique ID once
-  id="$(date +%Y%m%d-%H%M%S)-$RANDOM"
-
   # Update both badge and link target in one substitution using the same ID
-  sed -i -E "s|(\[!\[Coverage\]\()(https://[^/]+\.github\.io/[^/]+/coverage/)([0-9]{8}-[0-9]{6}-[0-9]+)(\.svg\)\]\()\2\3(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1\2${id}\4\2${id}\5|" "$FILE"
+  sed -i -E "s|(\[!\[Coverage\]\()(https://[^/]+\.github\.io/[^/]+/coverage/)([0-9]{8}-[0-9]{6}-[0-9]+)(\.svg\)\]\()\2\3(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1\2${ID}\4\2${ID}\5|" "$FILE"
 
   after_hash=$(git hash-object "$FILE")
   if [ "$before_hash" != "$after_hash" ]; then
