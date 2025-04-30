@@ -25,6 +25,7 @@ class AppInfo implements AppInfoController {
   late final String supabaseKey;
 
   /// Loads metadata from package_info and dotenv
+  @override
   Future<void> load({String envFileName = '.env'}) async {
     final info = await PackageInfo.fromPlatform();
     await dotenv.load(fileName: envFileName);

@@ -6,4 +6,6 @@ abstract class AppInfoController {
   String get supportEmail;
   String get supabaseURL;
   String get supabaseKey;
+
+  Future<void> load({String envFileName = '.env'});
 }

@@ -6,13 +6,16 @@ import 'package:avis_donor_app/helpers/app_info.dart';
 import 'package:avis_donor_app/helpers/avis_theme.dart';
 import 'package:avis_donor_app/avis_donor_app.dart';
 
+/// Allows test override of runApp
+void Function(Widget) runAppFunction = runApp;
+
 /// Entry point of the AVIS Donor Management App
-Future<void> main() async {
+Future<void> main({AppInfoController? customAppInfo}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   bool haveError = false;
 
-  final appInfo = AppInfo();
+  final appInfo = customAppInfo ?? AppInfo();
 
   try {
     await appInfo.load();
@@ -23,7 +26,7 @@ Future<void> main() async {
       stackTrace,
       'Initialization',
     );
-    runApp(ErrorApp(
+    runAppFunction(ErrorApp(
       error: 'Errore di inizializzazione',
       appInfo: appInfo,
     ));
@@ -32,7 +35,7 @@ Future<void> main() async {
 
   if (!haveError) {
     try {
-      runApp(AvisDonorApp(appInfo: appInfo));
+      runAppFunction(AvisDonorApp(appInfo: appInfo));
     } catch (error, stackTrace) {
       logError(
         'Error running main app',
@@ -40,7 +43,7 @@ Future<void> main() async {
         stackTrace,
         'Initialization',
       );
-      runApp(ErrorApp(
+      runAppFunction(ErrorApp(
         error: 'Errore di avvio',
         appInfo: appInfo,
       ));

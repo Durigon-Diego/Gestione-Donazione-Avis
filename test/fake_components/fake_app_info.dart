@@ -19,4 +19,11 @@ class FakeAppInfo extends AppInfoController {
 
   @override
   String supabaseKey = 'fake-key';
+
+  Future<void> Function(String) loadCallback = (_) async {};
+
+  @override
+  Future<void> load({String envFileName = '.env'}) async {
+    await loadCallback.call(envFileName);
+  }
 }
