@@ -1,109 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'helpers/logger_helper.dart';
-import 'helpers/app_info_controller.dart';
-import 'helpers/app_info.dart';
-import 'helpers/operator_session_controller.dart';
-import 'helpers/operator_session.dart';
-import 'helpers/avis_theme.dart';
-import 'pages/not_active_page.dart';
-import 'pages/login_page.dart';
-import 'pages/donation_page.dart';
-import 'pages/account_page.dart';
-import 'pages/operators_page.dart';
-import 'pages/donation_days_page.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/app_info.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/avis_donor_app.dart';
+
+/// Allows test override of runApp
+void Function(Widget) runAppFunction = runApp;
 
 /// Entry point of the AVIS Donor Management App
-Future<void> main() async {
+Future<void> main({AppInfoController? customAppInfo}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  bool initialized = false;
+  bool haveError = false;
 
-  final appInfo = AppInfo();
+  final appInfo = customAppInfo ?? AppInfo();
 
   try {
     await appInfo.load();
-  } catch (e) {
+  } catch (error, stackTrace) {
     logError(
-        'Error loading env variables', e, StackTrace.current, 'Initialization');
-    runApp(ErrorApp(
+      'Error loading env variables',
+      error,
+      stackTrace,
+      'Initialization',
+    );
+    runAppFunction(ErrorApp(
       error: 'Errore di inizializzazione',
       appInfo: appInfo,
     ));
-    initialized = true;
+    haveError = true;
   }
 
-  if (!initialized) {
+  if (!haveError) {
     try {
-      await Supabase.initialize(
-        url: appInfo.supabaseUrl,
-        anonKey: appInfo.supabaseKey,
+      runAppFunction(AvisDonorApp(appInfo: appInfo));
+    } catch (error, stackTrace) {
+      logError(
+        'Error running main app',
+        error,
+        stackTrace,
+        'Initialization',
       );
-
-      final operatorSession = OperatorSession();
-      await operatorSession.init();
-
-      runApp(AvisDonorApp(
-        appInfo: appInfo,
-        operatorSession: operatorSession,
-      ));
-    } catch (e) {
-      logError('Error initializing Supabase', e, StackTrace.current,
-          'Initialization');
-      runApp(ErrorApp(
-        error: 'Errore di connessione',
+      runAppFunction(ErrorApp(
+        error: 'Errore di avvio',
         appInfo: appInfo,
       ));
     }
-  }
-}
-
-/// Main application widget
-class AvisDonorApp extends StatelessWidget {
-  final AppInfoController appInfo;
-  final OperatorSessionController operatorSession;
-  const AvisDonorApp({
-    super.key,
-    required this.appInfo,
-    required this.operatorSession,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isAuthenticated =
-        Supabase.instance.client.auth.currentSession != null;
-
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      theme: AvisTheme.light,
-      debugShowCheckedModeBanner: false,
-      title: appInfo.appName,
-      home: isAuthenticated
-          ? DonationPage(appInfo: appInfo, operatorSession: operatorSession)
-          : LoginPage(operatorSession: operatorSession),
-      routes: {
-        '/login': (context) => LoginPage(operatorSession: operatorSession),
-        '/not_active': (context) =>
-            NotActivePage(appInfo: appInfo, operatorSession: operatorSession),
-        '/donation': (context) =>
-            DonationPage(appInfo: appInfo, operatorSession: operatorSession),
-        '/account': (context) =>
-            AccountPage(appInfo: appInfo, operatorSession: operatorSession),
-        '/operators': (context) =>
-            OperatorsPage(appInfo: appInfo, operatorSession: operatorSession),
-        '/donations_days': (context) => DonationDaysPage(
-            appInfo: appInfo, operatorSession: operatorSession),
-      },
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('it'), // italiano
-      ],
-    );
   }
 }
 

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'avis_theme.dart';
-import 'app_info_controller.dart';
-import 'operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
 
-/// Drawer riutilizzabile con le sezioni AVIS
 class AvisDrawer extends StatefulWidget {
   final AppInfoController appInfo;
+  final ConnectionStatusController connectionStatus;
   final OperatorSessionController operatorSession;
+
   const AvisDrawer({
     super.key,
     required this.appInfo,
+    required this.connectionStatus,
     required this.operatorSession,
   });
 
@@ -36,33 +37,22 @@ class DrawerItemData {
 }
 
 class _AvisDrawerState extends State<AvisDrawer> {
-  bool isConnected = Supabase.instance.client.auth.currentSession != null;
-
   @override
   void initState() {
     super.initState();
-    _monitorConnectivity();
-    widget.operatorSession.addListener(_onSessionChange);
+    widget.connectionStatus.addListener(_onChange);
+    widget.operatorSession.addListener(_onChange);
   }
 
   @override
   void dispose() {
-    widget.operatorSession.removeListener(_onSessionChange);
+    widget.connectionStatus.removeListener(_onChange);
+    widget.operatorSession.removeListener(_onChange);
     super.dispose();
   }
 
-  void _onSessionChange() {
+  void _onChange() {
     setState(() {});
-  }
-
-  void _monitorConnectivity() {
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      final hasNetwork = result != ConnectivityResult.none;
-      final session = Supabase.instance.client.auth.currentSession;
-      setState(() {
-        isConnected = hasNetwork && session != null;
-      });
-    });
   }
 
   Future<void> _logout() async {
@@ -78,11 +68,12 @@ class _AvisDrawerState extends State<AvisDrawer> {
         widget.operatorSession.isAdmin ? 'Amministratore' : 'Operatore';
 
     final drawerItems = [
-      DrawerItemData('Gestione Account', Icons.account_circle, '/account'),
+      const DrawerItemData(
+          'Gestione Account', Icons.account_circle, '/account'),
       if (widget.operatorSession.isActive) ...[
-        DrawerItemData('Donazione', Icons.water_drop, '/donation'),
+        const DrawerItemData('Donazione', Icons.water_drop, '/donation'),
       ] else ...[
-        DrawerItemData(
+        const DrawerItemData(
           'Donazione',
           Icons.lock,
           '/not_active',
@@ -91,10 +82,10 @@ class _AvisDrawerState extends State<AvisDrawer> {
         ),
       ],
       if (widget.operatorSession.isAdmin) ...[
-        DrawerItemData(
+        const DrawerItemData(
             'Gestione Operatori', Icons.manage_accounts, '/operators'),
-        DrawerItemData('Gestione Giornate Donazioni', Icons.calendar_today,
-            '/donations_days'),
+        const DrawerItemData('Gestione Giornate Donazioni',
+            Icons.calendar_today, '/donations_days'),
       ]
     ];
     return Drawer(
@@ -114,30 +105,25 @@ class _AvisDrawerState extends State<AvisDrawer> {
               ),
             ),
             SliverList(
-              delegate: SliverChildListDelegate.fixed([
-                ...drawerItems.map((item) {
-                  final selected = currentRoute == item.route;
-                  final color = selected
-                      ? (item.overrideColorSelected ?? AvisColors.green)
-                      : (item.overrideColorUnselected ?? AvisColors.blue);
-                  return ListTile(
-                    leading: Icon(item.icon, color: color),
-                    title: Text(item.title, style: TextStyle(color: color)),
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (!selected) {
-                        Navigator.of(context).pushReplacementNamed(item.route);
-                      }
-                    },
-                  );
-                }),
-              ]),
-            ),
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
+              delegate: SliverChildListDelegate.fixed(
+                [
+                  ...drawerItems.map((item) {
+                    final selected = currentRoute == item.route;
+                    final color = selected
+                        ? (item.overrideColorSelected ?? AvisColors.green)
+                        : (item.overrideColorUnselected ?? AvisColors.blue);
+                    return ListTile(
+                      leading: Icon(item.icon, color: color),
+                      title: Text(item.title, style: TextStyle(color: color)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (!selected) {
+                          Navigator.of(context)
+                              .pushReplacementNamed(item.route);
+                        }
+                      },
+                    );
+                  }),
                   const Divider(),
                   ListTile(
                     leading:
@@ -178,31 +164,41 @@ class _AvisDrawerState extends State<AvisDrawer> {
                       );
                     },
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 12.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.circle,
-                          size: 12,
-                          color: isConnected
-                              ? (widget.operatorSession.isActive
-                                  ? AvisColors.green
-                                  : AvisColors.amber)
-                              : AvisColors.red,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('Stato connessione',
-                            style: AvisTheme.smallTextStyle),
-                      ],
-                    ),
-                  ),
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.logout, color: AvisColors.red),
                     title: const Text('Logout'),
                     onTap: _logout,
+                    enabled:
+                        ServerStatus.connected == widget.connectionStatus.state,
+                  ),
+                  AnimatedBuilder(
+                    animation: widget.connectionStatus,
+                    builder: (context, _) {
+                      final (color, label) =
+                          switch (widget.connectionStatus.state) {
+                        ServerStatus.disconnected => (
+                            AvisColors.red,
+                            'Nessuna connessione',
+                          ),
+                        ServerStatus.supabaseOffline => (
+                            AvisColors.amber,
+                            'Server non raggiungibile',
+                          ),
+                        ServerStatus.connected => (
+                            widget.operatorSession.isActive
+                                ? AvisColors.green
+                                : AvisColors.blue,
+                            widget.operatorSession.isActive
+                                ? 'Online'
+                                : 'Utente inattivo',
+                          )
+                      };
+                      return ListTile(
+                        leading: Icon(Icons.circle, color: color),
+                        title: Text(label),
+                      );
+                    },
                   ),
                 ],
               ),

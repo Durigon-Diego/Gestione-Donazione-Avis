@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../helpers/avis_scaffold.dart';
-import '../helpers/app_info_controller.dart';
-import '../helpers/operator_session_controller.dart';
-import '../helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/helpers/avis_scaffold.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
 
 /// Page shown when an operator is not active
 class NotActivePage extends StatefulWidget {
   final AppInfoController appInfo;
+  final ConnectionStatusController connectionStatus;
   final OperatorSessionController operatorSession;
   const NotActivePage({
     super.key,
     required this.appInfo,
+    required this.connectionStatus,
     required this.operatorSession,
   });
 
@@ -59,12 +63,14 @@ class _NotActivePageState extends State<NotActivePage> {
     return !_showContent
         ? AvisScaffold(
             appInfo: widget.appInfo,
+            connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: '',
-            body: SizedBox.shrink(),
+            body: const SizedBox.shrink(),
           )
         : AvisScaffold(
             appInfo: widget.appInfo,
+            connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: 'Utente non attivo',
             body: Center(
@@ -74,19 +80,19 @@ class _NotActivePageState extends State<NotActivePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.warning_amber_rounded,
-                        size: 60, color: Colors.red),
+                        size: 60, color: AvisColors.red),
                     const SizedBox(height: 16),
                     const Text(
                       'Utente non attivo',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: AvisTheme.errorTextStyle,
                     ),
-                    const SizedBox(height: 12),
-                    if (!isAdmin)
+                    if (!isAdmin) ...{
+                      const SizedBox(height: 12),
                       const Text(
                         'Contattare un amministratore per abilitare l\'accesso.',
                         textAlign: TextAlign.center,
                       ),
+                    }
                   ],
                 ),
               ),

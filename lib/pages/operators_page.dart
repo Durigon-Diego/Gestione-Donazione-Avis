@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../helpers/logger_helper.dart';
-import '../helpers/avis_scaffold.dart';
-import '../helpers/app_info_controller.dart';
-import '../helpers/operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/avis_scaffold.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
 
 class OperatorsPage extends StatefulWidget {
   final AppInfoController appInfo;
+  final ConnectionStatusController connectionStatus;
   final OperatorSessionController operatorSession;
   const OperatorsPage({
     super.key,
-    required this.operatorSession,
     required this.appInfo,
+    required this.connectionStatus,
+    required this.operatorSession,
   });
 
   @override
@@ -56,15 +59,17 @@ class _OperatorsPageState extends State<OperatorsPage> {
     return !_showContent
         ? AvisScaffold(
             appInfo: widget.appInfo,
+            connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: '',
-            body: SizedBox.shrink(),
+            body: const SizedBox.shrink(),
           )
         : AvisScaffold(
             appInfo: widget.appInfo,
+            connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: 'Gestione Operatori',
-            body: Center(child: Text('Pagina gestione operatori')),
+            body: const Center(child: Text('Pagina gestione operatori')),
           );
   }
 }

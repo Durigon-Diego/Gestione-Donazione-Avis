@@ -1,8 +1,8 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'logger_helper.dart';
-import 'exceptions.dart';
-import 'app_info_controller.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/exceptions.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
 
 /// Real implementation of AppInfoController for production
 class AppInfo implements AppInfoController {
@@ -19,16 +19,16 @@ class AppInfo implements AppInfoController {
   late final String supportEmail;
 
   @override
-  late final String supabaseUrl;
+  late final String supabaseURL;
 
   @override
   late final String supabaseKey;
 
   /// Loads metadata from package_info and dotenv
   @override
-  Future<void> load() async {
+  Future<void> load({String envFileName = '.env'}) async {
     final info = await PackageInfo.fromPlatform();
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: envFileName);
 
     appName = dotenv.env['APP_NAME_OVERRIDE'] ?? info.appName;
     appVersion = info.version;
@@ -36,14 +36,14 @@ class AppInfo implements AppInfoController {
 
     String? appDescriptionVal = dotenv.env['APP_DESCRIPTION'];
     if (appDescriptionVal == null) {
-      throw LoadException('Missing APP_DESCRIPTION value on ".env".');
+      throw LoadException('Missing APP_DESCRIPTION value on "$envFileName".');
     }
     appDescription = appDescriptionVal;
     logInfo('Application description: "$appDescription"');
 
     String? supportEmailVal = dotenv.env['SUPPORT_EMAIL'];
     if (supportEmailVal == null) {
-      throw LoadException('Missing SUPPORT_EMAIL value on ".env".');
+      throw LoadException('Missing SUPPORT_EMAIL value on "$envFileName".');
     }
     supportEmail = supportEmailVal;
     logInfo('Support email: $supportEmail');
@@ -52,12 +52,12 @@ class AppInfo implements AppInfoController {
     String? supabaseKeyVal = dotenv.env['SUPABASE_ANON_KEY'];
     if (supabaseUrlVal == null || supabaseKeyVal == null) {
       throw LoadException(
-        'Missing SUPABASE_URL or SUPABASE_ANON_KEY values on ".env".',
+        'Missing SUPABASE_URL or SUPABASE_ANON_KEY values on "$envFileName".',
       );
     }
-    supabaseUrl = supabaseUrlVal;
+    supabaseURL = supabaseUrlVal;
     supabaseKey = supabaseKeyVal;
-    logInfo('SUPABASE_URL: $supabaseUrl');
+    logInfo('SUPABASE_URL: $supabaseURL');
     logInfo('SUPABASE_ANON_KEY: ${supabaseKey.substring(0, 8)}...');
   }
 }

@@ -39,6 +39,9 @@ jobs:
       - name: Analyze Dart code
         run: flutter analyze
 
+      - name: Create fake test for coverage
+        run: dart run tool/generate_coverage_helper.dart
+
       - name: Run tests with coverage
         run: flutter test --coverage
 

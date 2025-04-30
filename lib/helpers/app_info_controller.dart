@@ -4,8 +4,8 @@ abstract class AppInfoController {
   String get appVersion;
   String get appDescription;
   String get supportEmail;
-  String get supabaseUrl;
+  String get supabaseURL;
   String get supabaseKey;
 
-  Future<void> load();
+  Future<void> load({String envFileName = '.env'});
 }

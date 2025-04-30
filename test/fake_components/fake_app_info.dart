@@ -15,13 +15,15 @@ class FakeAppInfo extends AppInfoController {
   String supportEmail = 'supporto@test.com';
 
   @override
-  String supabaseUrl = 'https://fake.supabase.co';
+  String supabaseURL = 'https://fake.supabase.co';
 
   @override
   String supabaseKey = 'fake-key';
 
+  Future<void> Function(String) loadCallback = (_) async {};
+
   @override
-  Future<void> load() async {
-    // No-op for fake implementation
+  Future<void> load({String envFileName = '.env'}) async {
+    await loadCallback.call(envFileName);
   }
 }

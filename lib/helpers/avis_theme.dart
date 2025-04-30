@@ -10,6 +10,10 @@ class AvisColors {
   static const Color darkGrey = Color(0xFF555555);
   static const Color warmGrey = Color(0xFF888066);
   static const Color amber = Colors.amber;
+  static const Color text = Colors.black;
+  static const Color smallText = Colors.black87;
+  static const Color overlay = Colors.black45;
+  static const Color hoverBackground = Color(0xFFF5F5F5); // hover grigio chiaro
 }
 
 /// AVIS Theme definition
@@ -44,12 +48,65 @@ class AvisTheme {
       margin: const EdgeInsets.all(16),
     ),
     inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: AvisColors.blue),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AvisColors.blue, width: 2.0),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AvisColors.blue),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AvisColors.red),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AvisColors.red, width: 2.0),
+      ),
       labelStyle: TextStyle(color: AvisColors.blue),
+      floatingLabelStyle: TextStyle(color: AvisColors.blue),
     ),
     textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: Colors.black),
-      bodySmall: TextStyle(color: Colors.black87),
+      bodyMedium: TextStyle(color: AvisColors.text),
+      bodySmall: TextStyle(color: AvisColors.smallText),
+    ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AvisColors.blue,
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AvisColors.darkGrey,
+      contentTextStyle: TextStyle(color: AvisColors.white),
+    ),
+    dialogTheme: DialogTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      titleTextStyle: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: AvisColors.blue,
+      ),
+      contentTextStyle: const TextStyle(
+        fontSize: 16,
+        color: AvisColors.smallText,
+      ),
+    ),
+    tabBarTheme: const TabBarTheme(
+      labelColor: AvisColors.red,
+      unselectedLabelColor: AvisColors.darkGrey,
+      indicator: UnderlineTabIndicator(
+        borderSide: BorderSide(color: AvisColors.red, width: 2),
+      ),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: AvisColors.grey,
+      thickness: 1,
+    ),
+    listTileTheme: const ListTileThemeData(
+      selectedColor: AvisColors.green,
+      selectedTileColor: AvisColors.grey,
+      tileColor: Colors.transparent,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
     ),
   );
 }
