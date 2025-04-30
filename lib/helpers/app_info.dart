@@ -1,8 +1,8 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
-import 'package:avis_donor_app/helpers/exceptions.dart';
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/exceptions.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
 
 /// Real implementation of AppInfoController for production
 class AppInfo implements AppInfoController {

@@ -5,8 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
-import 'package:avis_donor_app/helpers/operator_session.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session.dart';
 import 'fake_components/fake_operator_session.dart';
 
 // Mock classes

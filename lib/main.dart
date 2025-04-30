@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
-import 'package:avis_donor_app/helpers/app_info.dart';
-import 'package:avis_donor_app/helpers/avis_theme.dart';
-import 'package:avis_donor_app/avis_donor_app.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/app_info.dart';
+import 'package:avis_donation_management/components/avis_theme.dart';
+import 'package:avis_donation_management/avis_donation_management_app.dart';
 
 /// Allows test override of runApp
 void Function(Widget) runAppFunction = runApp;
@@ -35,7 +35,7 @@ Future<void> main({AppInfoController? customAppInfo}) async {
 
   if (!haveError) {
     try {
-      runAppFunction(AvisDonorApp(appInfo: appInfo));
+      runAppFunction(AvisDonationManagementApp(appInfo: appInfo));
     } catch (error, stackTrace) {
       logError(
         'Error running main app',

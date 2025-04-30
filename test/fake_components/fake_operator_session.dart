@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
 
 /// Fake implementation of OperatorSessionController for tests
 class FakeOperatorSession extends OperatorSessionController {

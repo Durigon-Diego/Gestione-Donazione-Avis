@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
 
 /// Centralized operator session store
 class OperatorSession extends OperatorSessionController {

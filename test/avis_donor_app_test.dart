@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
-import 'package:avis_donor_app/avis_donor_app.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/avis_donation_management_app.dart';
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
 import 'fake_components/fake_operator_session.dart';
@@ -13,7 +13,7 @@ import 'fake_components/fake_operator_session.dart';
 class MockOperatorSession extends OperatorSessionController with Mock {}
 
 void main() {
-  group('AvisDonorApp', () {
+  group('AvisDonationManagementApp', () {
     late FakeAppInfo fakeAppInfo;
     late FakeConnectionStatus fakeConnectionStatus;
     late FakeOperatorSession fakeOperatorSession;
@@ -33,7 +33,7 @@ void main() {
       fakeOperatorSession.setState(userId: null);
 
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -53,7 +53,7 @@ void main() {
       fakeOperatorSession.setState(userId: 'test_user');
 
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -72,7 +72,7 @@ void main() {
       fakeOperatorSession.setState(userId: 'test_user');
 
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -89,7 +89,7 @@ void main() {
 
     testWidgets('has correct title', (tester) async {
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -106,7 +106,7 @@ void main() {
 
     testWidgets('theme is AvisTheme.light', (tester) async {
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -124,7 +124,7 @@ void main() {
 
     testWidgets('routes are correctly registered', (tester) async {
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -157,7 +157,7 @@ void main() {
       expect(fakeConnectionStatus.numListener, equals(0));
 
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -188,7 +188,7 @@ void main() {
       when(() => mockOperatorSession.isActive).thenReturn(false);
 
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: mockOperatorSession,
@@ -208,7 +208,7 @@ void main() {
     testWidgets('removes listener in dispose if not connectedOnce',
         (tester) async {
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,
@@ -232,7 +232,7 @@ void main() {
       required String expectedText,
     }) async {
       await tester.pumpWidget(
-        AvisDonorApp(
+        AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
           operatorSession: fakeOperatorSession,

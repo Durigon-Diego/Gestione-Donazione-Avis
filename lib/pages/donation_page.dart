@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
-import 'package:avis_donor_app/helpers/avis_scaffold.dart';
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
-import 'package:avis_donor_app/helpers/avis_bottom_navigation_bar.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/components/avis_bottom_navigation_bar.dart';
+import 'package:avis_donation_management/components/avis_scaffold.dart';
 
 /// Donation page with bottom navigation and drawer menu
 class DonationPage extends StatefulWidget {
@@ -37,7 +37,7 @@ class _DonationPageState extends State<DonationPage> {
 
   /// List of tab labels in Italian (visible to user)
   final List<String> _titles = [
-    'Ingresso',
+    'Accoglienza',
     'Accettazione',
     'Visita Medica',
     'Donazione',
@@ -45,7 +45,7 @@ class _DonationPageState extends State<DonationPage> {
 
   /// Navigation items
   final List<BottomNavigationBarItemData> _navItems = const [
-    BottomNavigationBarItemData(icon: Icons.input, label: 'Ingresso'),
+    BottomNavigationBarItemData(icon: Icons.input, label: 'Accoglienza'),
     BottomNavigationBarItemData(icon: Icons.how_to_reg, label: 'Accettazione'),
     BottomNavigationBarItemData(icon: Icons.medical_services, label: 'Visita'),
     BottomNavigationBarItemData(
@@ -114,13 +114,13 @@ class _DonationPageState extends State<DonationPage> {
   }
 }
 
-/// Placeholder widget for the check-in (ingresso) phase
+/// Placeholder widget for the check-in (Accoglienza) phase
 class CheckInPage extends StatelessWidget {
   const CheckInPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Gestione ingresso donatori'));
+    return const Center(child: Text('Gestione accoglienza donatori'));
   }
 }
 

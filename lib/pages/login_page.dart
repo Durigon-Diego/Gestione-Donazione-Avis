@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
-import 'package:avis_donor_app/helpers/exceptions.dart';
-import 'package:avis_donor_app/helpers/avis_theme.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/exceptions.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/components/avis_theme.dart';
 
 /// Login page for AVIS operators
 class LoginPage extends StatefulWidget {

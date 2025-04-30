@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:avis_donor_app/helpers/avis_theme.dart';
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/components/avis_theme.dart';
 
 class AvisDrawer extends StatefulWidget {
   final AppInfoController appInfo;

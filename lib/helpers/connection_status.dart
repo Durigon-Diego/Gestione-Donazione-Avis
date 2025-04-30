@@ -3,9 +3,9 @@ import 'dart:convert';
 
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
 
 /// Provides a high-level connection status by combining:
 /// - internet availability

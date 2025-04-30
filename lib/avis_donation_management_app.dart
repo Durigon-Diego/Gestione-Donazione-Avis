@@ -3,28 +3,28 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart';
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
-import 'package:avis_donor_app/helpers/connection_status.dart';
-import 'package:avis_donor_app/helpers/operator_session_controller.dart';
-import 'package:avis_donor_app/helpers/operator_session.dart';
-import 'package:avis_donor_app/helpers/avis_theme.dart';
-import 'package:avis_donor_app/pages/not_active_page.dart';
-import 'package:avis_donor_app/pages/login_page.dart';
-import 'package:avis_donor_app/pages/donation_page.dart';
-import 'package:avis_donor_app/pages/account_page.dart';
-import 'package:avis_donor_app/pages/operators_page.dart';
-import 'package:avis_donor_app/pages/donation_days_page.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/connection_status.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_session.dart';
+import 'package:avis_donation_management/components/avis_theme.dart';
+import 'package:avis_donation_management/pages/not_active_page.dart';
+import 'package:avis_donation_management/pages/login_page.dart';
+import 'package:avis_donation_management/pages/donation_page.dart';
+import 'package:avis_donation_management/pages/account_page.dart';
+import 'package:avis_donation_management/pages/operators_page.dart';
+import 'package:avis_donation_management/pages/donation_days_page.dart';
 
 /// Main application widget
-class AvisDonorApp extends StatefulWidget {
+class AvisDonationManagementApp extends StatefulWidget {
   final AppInfoController appInfo;
   final ConnectionStatusController? connectionStatus;
   final OperatorSessionController? operatorSession;
   final FlutterAuthClientOptions? authOptions;
 
-  const AvisDonorApp(
+  const AvisDonationManagementApp(
       {super.key,
       required this.appInfo,
       this.connectionStatus,
@@ -32,10 +32,11 @@ class AvisDonorApp extends StatefulWidget {
       this.authOptions});
 
   @override
-  State<AvisDonorApp> createState() => _AvisDonorAppState();
+  State<AvisDonationManagementApp> createState() =>
+      _AvisDonationManagementAppState();
 }
 
-class _AvisDonorAppState extends State<AvisDonorApp> {
+class _AvisDonationManagementAppState extends State<AvisDonationManagementApp> {
   late final ConnectionStatusController connectionStatus;
   late final OperatorSessionController operatorSession;
   late final FlutterAuthClientOptions authOptions;

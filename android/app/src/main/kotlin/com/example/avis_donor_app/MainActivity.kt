@@ -1,4 +1,4 @@
-package com.example.avis_donor_app
+package com.ddd.avis_donation_management
 
 import io.flutter.embedding.android.FlutterActivity
 

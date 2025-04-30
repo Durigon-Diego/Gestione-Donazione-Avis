@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/connection_status_controller.dart';
 
 class FakeConnectionStatus extends ConnectionStatusController {
   ServerStatus _state = ServerStatus.connected;

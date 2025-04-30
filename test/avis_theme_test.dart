@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donation_management/components/avis_theme.dart';
 
 void main() {
   group('AvisTheme', () {
