@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../helpers/logger_helper.dart';
-import '../helpers/avis_scaffold.dart';
-import '../helpers/app_info_controller.dart';
-import '../helpers/connection_status_controller.dart';
-import '../helpers/operator_session_controller.dart';
-import '../helpers/avis_bottom_navigation_bar.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/avis_scaffold.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/avis_bottom_navigation_bar.dart';
 
 /// Donation page with bottom navigation and drawer menu
 class DonationPage extends StatefulWidget {
@@ -97,7 +97,7 @@ class _DonationPageState extends State<DonationPage> {
             connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: '',
-            body: SizedBox.shrink(),
+            body: const SizedBox.shrink(),
           )
         : AvisScaffold(
             appInfo: widget.appInfo,

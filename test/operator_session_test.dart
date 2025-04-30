@@ -127,7 +127,7 @@ void main() {
             filter: any(named: 'filter'),
             callback: any(named: 'callback'),
           )).thenAnswer((invocation) {
-        onChangeCallback = invocation.namedArguments[Symbol('callback')];
+        onChangeCallback = invocation.namedArguments[const Symbol('callback')];
         return mockChannel;
       });
     }
@@ -154,7 +154,8 @@ void main() {
       expect(session.currentUserId, 'uid');
 
       notified = false;
-      authStreamController.add(AuthState(AuthChangeEvent.signedOut, null));
+      authStreamController
+          .add(const AuthState(AuthChangeEvent.signedOut, null));
       await tester.pump();
 
       expect(notified, true);

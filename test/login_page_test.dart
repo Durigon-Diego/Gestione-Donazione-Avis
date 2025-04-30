@@ -29,7 +29,7 @@ void main() {
     late MockAuth mockAuth;
     late MockSession mockSession;
     late MockUser mockUser;
-    late FakeConnectionStatusController fakeConnectionStatus;
+    late FakeConnectionStatus fakeConnectionStatus;
 
     setUpAll(() async {
       registerFallbackValue(FakeRoute());
@@ -41,7 +41,7 @@ void main() {
     });
 
     setUp(() {
-      fakeConnectionStatus = FakeConnectionStatusController();
+      fakeConnectionStatus = FakeConnectionStatus();
       mockClient = MockSupabaseClient();
       mockAuth = MockAuth();
       mockSession = MockSession();
@@ -121,7 +121,7 @@ void main() {
       when(() => mockAuth.signInWithPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(AuthException('Invalid', statusCode: '400'));
+          )).thenThrow(const AuthException('Invalid', statusCode: '400'));
 
       await pumpLoginPage(tester, session);
       await tester.enterText(find.byType(TextField).at(0), 'wrong@example.com');
@@ -136,9 +136,11 @@ void main() {
       final session = FakeOperatorSession();
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.signInWithPassword(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).thenThrow(AuthException('Too many attempts', statusCode: '429'));
+                email: any(named: 'email'),
+                password: any(named: 'password'),
+              ))
+          .thenThrow(
+              const AuthException('Too many attempts', statusCode: '429'));
 
       await pumpLoginPage(tester, session);
       await tester.enterText(find.byType(TextField).at(0), 'spam@example.com');
@@ -242,7 +244,7 @@ void main() {
     testWidgets('all elements change enabled state with connection status',
         (tester) async {
       final session = FakeOperatorSession();
-      fakeConnectionStatus.setState(ConnectionStatus.disconnected);
+      fakeConnectionStatus.setState(ServerStatus.disconnected);
 
       await pumpLoginPage(tester, session, settle: false);
 
@@ -288,7 +290,7 @@ void main() {
       );
 
       // Change to supabaseOffline
-      fakeConnectionStatus.setState(ConnectionStatus.supabaseOffline);
+      fakeConnectionStatus.setState(ServerStatus.supabaseOffline);
       await tester.pump();
       await verifyState(
         enabled: false,
@@ -297,7 +299,7 @@ void main() {
       );
 
       // Change to connected
-      fakeConnectionStatus.setState(ConnectionStatus.connected);
+      fakeConnectionStatus.setState(ServerStatus.connected);
       await tester.pump();
       await verifyState(
         enabled: true,
@@ -306,7 +308,7 @@ void main() {
       );
 
       // Return to disconnected
-      fakeConnectionStatus.setState(ConnectionStatus.disconnected);
+      fakeConnectionStatus.setState(ServerStatus.disconnected);
       await tester.pump();
       await verifyState(
         enabled: false,

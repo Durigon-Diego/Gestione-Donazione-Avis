@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'avis_theme.dart';
-import 'app_info_controller.dart';
-import 'connection_status_controller.dart';
-import 'operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
 
 class AvisDrawer extends StatefulWidget {
   final AppInfoController appInfo;
@@ -68,11 +68,12 @@ class _AvisDrawerState extends State<AvisDrawer> {
         widget.operatorSession.isAdmin ? 'Amministratore' : 'Operatore';
 
     final drawerItems = [
-      DrawerItemData('Gestione Account', Icons.account_circle, '/account'),
+      const DrawerItemData(
+          'Gestione Account', Icons.account_circle, '/account'),
       if (widget.operatorSession.isActive) ...[
-        DrawerItemData('Donazione', Icons.water_drop, '/donation'),
+        const DrawerItemData('Donazione', Icons.water_drop, '/donation'),
       ] else ...[
-        DrawerItemData(
+        const DrawerItemData(
           'Donazione',
           Icons.lock,
           '/not_active',
@@ -81,10 +82,10 @@ class _AvisDrawerState extends State<AvisDrawer> {
         ),
       ],
       if (widget.operatorSession.isAdmin) ...[
-        DrawerItemData(
+        const DrawerItemData(
             'Gestione Operatori', Icons.manage_accounts, '/operators'),
-        DrawerItemData('Gestione Giornate Donazioni', Icons.calendar_today,
-            '/donations_days'),
+        const DrawerItemData('Gestione Giornate Donazioni',
+            Icons.calendar_today, '/donations_days'),
       ]
     ];
     return Drawer(
@@ -168,23 +169,23 @@ class _AvisDrawerState extends State<AvisDrawer> {
                     leading: const Icon(Icons.logout, color: AvisColors.red),
                     title: const Text('Logout'),
                     onTap: _logout,
-                    enabled: ConnectionStatus.connected ==
-                        widget.connectionStatus.state,
+                    enabled:
+                        ServerStatus.connected == widget.connectionStatus.state,
                   ),
                   AnimatedBuilder(
                     animation: widget.connectionStatus,
                     builder: (context, _) {
                       final (color, label) =
                           switch (widget.connectionStatus.state) {
-                        ConnectionStatus.disconnected => (
+                        ServerStatus.disconnected => (
                             AvisColors.red,
                             'Nessuna connessione',
                           ),
-                        ConnectionStatus.supabaseOffline => (
+                        ServerStatus.supabaseOffline => (
                             AvisColors.amber,
                             'Server non raggiungibile',
                           ),
-                        ConnectionStatus.connected => (
+                        ServerStatus.connected => (
                             widget.operatorSession.isActive
                                 ? AvisColors.green
                                 : AvisColors.blue,

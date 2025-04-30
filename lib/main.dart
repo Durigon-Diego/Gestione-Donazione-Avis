@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'helpers/logger_helper.dart';
-import 'helpers/app_info_controller.dart';
-import 'helpers/app_info.dart';
-import 'helpers/avis_theme.dart';
-import 'avis_donor_app.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/app_info.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/avis_donor_app.dart';
 
 /// Entry point of the AVIS Donor Management App
 Future<void> main() async {

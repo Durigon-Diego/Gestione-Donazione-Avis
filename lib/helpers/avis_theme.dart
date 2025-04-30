@@ -73,15 +73,15 @@ class AvisTheme {
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: AvisColors.blue,
     ),
-    snackBarTheme: SnackBarThemeData(
+    snackBarTheme: const SnackBarThemeData(
       backgroundColor: AvisColors.darkGrey,
-      contentTextStyle: const TextStyle(color: AvisColors.white),
+      contentTextStyle: TextStyle(color: AvisColors.white),
     ),
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
-      titleTextStyle: TextStyle(
+      titleTextStyle: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
         color: AvisColors.blue,
@@ -102,11 +102,11 @@ class AvisTheme {
       color: AvisColors.grey,
       thickness: 1,
     ),
-    listTileTheme: ListTileThemeData(
+    listTileTheme: const ListTileThemeData(
       selectedColor: AvisColors.green,
       selectedTileColor: AvisColors.grey,
       tileColor: Colors.transparent,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
     ),
   );
 }

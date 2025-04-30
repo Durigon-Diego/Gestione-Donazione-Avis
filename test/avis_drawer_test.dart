@@ -18,10 +18,10 @@ void main() {
       );
     });
 
-    late FakeConnectionStatusController fakeConnectionStatus;
+    late FakeConnectionStatus fakeConnectionStatus;
 
     setUp(() {
-      fakeConnectionStatus = FakeConnectionStatusController();
+      fakeConnectionStatus = FakeConnectionStatus();
     });
 
     testWidgets('displays base items for active operator', (tester) async {
@@ -601,7 +601,7 @@ void main() {
         );
 
         // Simulate connection lost (disconnected)
-        fakeConnectionStatus.setState(ConnectionStatus.disconnected);
+        fakeConnectionStatus.setState(ServerStatus.disconnected);
         await tester.pumpAndSettle();
         expect(
           getConnectionText().data,
@@ -609,7 +609,7 @@ void main() {
         );
 
         // Simulate Supabase unreachable (supabaseOffline)
-        fakeConnectionStatus.setState(ConnectionStatus.supabaseOffline);
+        fakeConnectionStatus.setState(ServerStatus.supabaseOffline);
         await tester.pumpAndSettle();
         expect(
           getConnectionText().data,
@@ -618,7 +618,7 @@ void main() {
 
         // Simulate connection restored and operator now active
         fakeOperatorSession.setState(active: true);
-        fakeConnectionStatus.setState(ConnectionStatus.connected);
+        fakeConnectionStatus.setState(ServerStatus.connected);
         await tester.pumpAndSettle();
         expect(
           getConnectionText().data,

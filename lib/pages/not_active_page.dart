@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../helpers/avis_theme.dart';
-import '../helpers/avis_scaffold.dart';
-import '../helpers/app_info_controller.dart';
-import '../helpers/connection_status_controller.dart';
-import '../helpers/operator_session_controller.dart';
-import '../helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/helpers/avis_scaffold.dart';
+import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
 
 /// Page shown when an operator is not active
 class NotActivePage extends StatefulWidget {
@@ -66,7 +66,7 @@ class _NotActivePageState extends State<NotActivePage> {
             connectionStatus: widget.connectionStatus,
             operatorSession: widget.operatorSession,
             title: '',
-            body: SizedBox.shrink(),
+            body: const SizedBox.shrink(),
           )
         : AvisScaffold(
             appInfo: widget.appInfo,

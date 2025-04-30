@@ -10,12 +10,12 @@ import 'fake_components/fake_operator_session.dart';
 void main() {
   group('AvisScaffold', () {
     late FakeAppInfo appInfo;
-    late FakeConnectionStatusController connectionStatus;
+    late FakeConnectionStatus connectionStatus;
     late FakeOperatorSession operatorSession;
 
     setUp(() {
       appInfo = FakeAppInfo();
-      connectionStatus = FakeConnectionStatusController();
+      connectionStatus = FakeConnectionStatus();
       operatorSession = FakeOperatorSession();
     });
 

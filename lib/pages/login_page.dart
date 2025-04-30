@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../helpers/logger_helper.dart';
-import '../helpers/exceptions.dart';
-import '../helpers/avis_theme.dart';
-import '../helpers/connection_status_controller.dart';
-import '../helpers/operator_session_controller.dart';
+import 'package:avis_donor_app/helpers/logger_helper.dart';
+import 'package:avis_donor_app/helpers/exceptions.dart';
+import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donor_app/helpers/connection_status_controller.dart';
+import 'package:avis_donor_app/helpers/operator_session_controller.dart';
 
 /// Login page for AVIS operators
 class LoginPage extends StatefulWidget {
@@ -154,16 +154,15 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final connected =
-        widget.connectionStatus.state == ConnectionStatus.connected;
+    final connected = widget.connectionStatus.state == ServerStatus.connected;
 
     final (color, label) = switch (widget.connectionStatus.state) {
-      ConnectionStatus.disconnected => (AvisColors.red, 'Nessuna connessione'),
-      ConnectionStatus.supabaseOffline => (
+      ServerStatus.disconnected => (AvisColors.red, 'Nessuna connessione'),
+      ServerStatus.supabaseOffline => (
           AvisColors.amber,
           'Server non raggiungibile'
         ),
-      ConnectionStatus.connected => (AvisColors.green, 'Connesso'),
+      ServerStatus.connected => (AvisColors.green, 'Connesso'),
     };
 
     return !_showContent
