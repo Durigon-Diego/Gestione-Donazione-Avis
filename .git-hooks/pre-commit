@@ -11,59 +11,67 @@ if [ "$branch" = "main" ]; then
 fi
 
 set -euo pipefail
-
-readonly FILE="README.md"
-readonly BACKUP="${FILE}_local"
-readonly LOCKFILE=".pre-commit.lock"
+  
 readonly PATTERN="badge::coverage"
+readonly FILES_TO_UPDATE=("README.md" "README.en.md")
 
-# Exit early if already processed
-if [ -f "$LOCKFILE" ]; then
-  exit 0
-fi
+for FILE in "${FILES_TO_UPDATE[@]}"; do
+  BACKUP="${FILE}_local"
 
-# Ensure no stale backup exists before proceeding
-if [ -f "$BACKUP" ]; then
-  echo "[hook] Backup file $BACKUP already exists. Aborting to prevent overwrite."
-  exit 1
-fi
-
-# Create lock file
-touch "$LOCKFILE"
-
-# Ensure cleanup on exit: remove lock and restore backup if it exists
-trap '[ -f "$LOCKFILE" ] && rm -f "$LOCKFILE" >/dev/null 2>&1; [ -f "$BACKUP" ] && mv -f "$BACKUP" "$FILE" >/dev/null 2>&1 || true' EXIT
-
-[ -f "$FILE" ] || exit 0
-grep -q "$PATTERN" "$FILE" || exit 0
-if ! git ls-files --error-unmatch "$FILE" >/dev/null 2>&1; then
-  echo "[hook] File $FILE is not tracked: cannot restore."
-  exit 0
-fi
-
-if ! git diff --quiet "$FILE"; then
-  echo "[hook] Local changes detected, saving to $BACKUP"
-  cp "$FILE" "$BACKUP"
-
-  if git diff --cached --quiet -- "$FILE"; then
-    git restore "$FILE"
-  else
-    git restore --staged --worktree "$FILE"
+  # Ensure no stale backup exists before proceeding
+  if [ -f "$BACKUP" ]; then
+    echo "[hook] Backup file $BACKUP already exists. Aborting to prevent overwrite."
+    exit 1
   fi
-fi
+done
 
-before_hash=$(git hash-object "$FILE")
+# Ensure cleanup on exit: restore backup if it exists
+cleanup() {
+  for i in "${!FILES_TO_UPDATE[@]}"; do
+    FILE="${FILES_TO_UPDATE[$i]}"
+    BACKUP="${FILE}_local"
+    if [ -f "$BACKUP" ]; then
+      mv -f "$BACKUP" "$FILE" >/dev/null 2>&1 || true
+    fi
+  done
+}
+trap cleanup EXIT
 
-# Generate unique ID once
-id="$(date +%Y%m%d-%H%M%S)-$RANDOM"
+for FILE in "${FILES_TO_UPDATE[@]}"; do
+  BACKUP="${FILE}_local"
 
-# Update both badge and link target in one substitution using the same ID
-sed -i -E "s|(\[!\[Coverage\]\()(https://[^/]+\.github\.io/[^/]+/coverage/)([0-9]{8}-[0-9]{6}-[0-9]+)(\.svg\)\]\()\2\3(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1\2${id}\4\2${id}\5|" "$FILE"
+  [ -f "$FILE" ] || exit 0
+  grep -q "$PATTERN" "$FILE" || exit 0
+  if ! git ls-files --error-unmatch "$FILE" >/dev/null 2>&1; then
+    echo "[hook] File $FILE is not tracked: cannot restore."
+    exit 0
+  fi
 
-after_hash=$(git hash-object "$FILE")
-if [ "$before_hash" != "$after_hash" ]; then
-  git add "$FILE"
-  echo "[hook] Badge updated and staged for commit."
-else
-  echo "[hook] No badge update needed."
-fi
+  if ! git diff --quiet "$FILE"; then
+    echo "[hook] Local changes detected, saving to $BACKUP"
+    cp "$FILE" "$BACKUP"
+
+    if git diff --cached --quiet -- "$FILE"; then
+      git restore "$FILE"
+    else
+      git restore --staged --worktree "$FILE"
+    fi
+  fi
+
+  before_hash=$(git hash-object "$FILE")
+
+  # Generate unique ID once
+  id="$(date +%Y%m%d-%H%M%S)-$RANDOM"
+
+  # Update both badge and link target in one substitution using the same ID
+  sed -i -E "s|(\[!\[Coverage\]\()(https://[^/]+\.github\.io/[^/]+/coverage/)([0-9]{8}-[0-9]{6}-[0-9]+)(\.svg\)\]\()\2\3(/index\.html\)\s*<!--\s*$PATTERN\s*-->)|\1\2${id}\4\2${id}\5|" "$FILE"
+
+  after_hash=$(git hash-object "$FILE")
+  if [ "$before_hash" != "$after_hash" ]; then
+    git add "$FILE"
+    echo "[hook] Badge updated and staged for commit for file '$FILE'."
+  else
+    echo "[hook] No badge update needed for file '$FILE'."
+  fi
+
+done

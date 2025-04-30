@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/helpers/exceptions.dart';
+import 'package:avis_donation_management/helpers/exceptions.dart';
 
 void main() {
   group('Custom Exceptions', () {

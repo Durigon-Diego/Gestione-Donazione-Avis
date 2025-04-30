@@ -1,6 +1,6 @@
 {
-    "name": "avis_donor_app",
-    "short_name": "avis_donor_app",
+    "name": "Gestione Donazione AVIS",
+    "short_name": "Gestione Donazione AVIS",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

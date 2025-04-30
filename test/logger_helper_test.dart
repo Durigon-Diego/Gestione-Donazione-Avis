@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/helpers/logger_helper.dart' as logger_helper;
+import 'package:avis_donation_management/helpers/logger_helper.dart'
+    as logger_helper;
 
 void main() {
   group('LoggerHelper', () {

@@ -1,4 +1,4 @@
-import 'package:avis_donor_app/helpers/app_info_controller.dart';
+import 'package:avis_donation_management/helpers/app_info_controller.dart';
 
 /// Fake implementation of AppInfo for tests
 class FakeAppInfo extends AppInfoController {

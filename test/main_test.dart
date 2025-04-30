@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/main.dart' as main_entry;
-import 'package:avis_donor_app/avis_donor_app.dart';
+import 'package:avis_donation_management/main.dart' as main_entry;
+import 'package:avis_donation_management/avis_donation_management_app.dart';
 
 import 'fake_components/fake_app_info.dart';
 
@@ -18,7 +18,8 @@ void main() {
       };
     });
 
-    test('runApp receives AvisDonorApp if load succeeds', () async {
+    test('runApp receives AvisDonationManagementApp if load succeeds',
+        () async {
       bool loadCalled = false;
       fakeAppInfo.loadCallback = (_) async {
         loadCalled = true;
@@ -27,9 +28,9 @@ void main() {
       await main_entry.main(customAppInfo: fakeAppInfo);
 
       expect(loadCalled, isTrue);
-      expect(capturedApp, isA<AvisDonorApp>());
+      expect(capturedApp, isA<AvisDonationManagementApp>());
 
-      final appWidget = capturedApp as AvisDonorApp;
+      final appWidget = capturedApp as AvisDonationManagementApp;
       expect(appWidget.appInfo.appName, equals('App di Test'));
     });
 
@@ -57,10 +58,11 @@ void main() {
       expect(captured, isNotNull);
     });
 
-    test('runApp receives ErrorApp if AvisDonorApp throws', () async {
+    test('runApp receives ErrorApp if AvisDonationManagementApp throws',
+        () async {
       fakeAppInfo.loadCallback = (_) async {};
       main_entry.runAppFunction = (Widget app) {
-        if (app is AvisDonorApp) throw Exception('boom');
+        if (app is AvisDonationManagementApp) throw Exception('boom');
         capturedApp = app;
       };
 

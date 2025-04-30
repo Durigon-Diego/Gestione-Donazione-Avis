@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:avis_donor_app/helpers/avis_theme.dart';
+import 'package:avis_donation_management/components/avis_theme.dart';
 
 /// Data model for each bottom navigation item
 class BottomNavigationBarItemData {

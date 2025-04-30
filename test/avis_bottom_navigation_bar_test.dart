@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/helpers/avis_bottom_navigation_bar.dart';
+import 'package:avis_donation_management/components/avis_bottom_navigation_bar.dart';
 
 void main() {
   group('AvisBottomNavigationBarData', () {

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:avis_donor_app/helpers/app_info.dart';
-import 'package:avis_donor_app/helpers/exceptions.dart';
+import 'package:avis_donation_management/helpers/app_info.dart';
+import 'package:avis_donation_management/helpers/exceptions.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

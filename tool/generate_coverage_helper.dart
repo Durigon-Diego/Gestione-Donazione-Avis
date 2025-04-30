@@ -29,7 +29,7 @@ void main() {
   for (final file in dartFiles) {
     final relativePath = file.path.replaceAll('\\', '/');
     final importPath = relativePath.substring('lib/'.length);
-    buffer.writeln('import \'package:avis_donor_app/$importPath\';');
+    buffer.writeln('import \'package:avis_donation_management/$importPath\';');
   }
 
   buffer.writeln('\nvoid main() {');

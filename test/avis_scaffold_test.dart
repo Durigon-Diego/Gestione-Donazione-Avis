@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donor_app/helpers/avis_scaffold.dart';
-import 'package:avis_donor_app/helpers/avis_bottom_navigation_bar.dart';
+import 'package:avis_donation_management/components/avis_bottom_navigation_bar.dart';
+import 'package:avis_donation_management/components/avis_scaffold.dart';
 
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
