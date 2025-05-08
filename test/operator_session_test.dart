@@ -32,12 +32,12 @@ class FakeRoute extends Fake implements Route<dynamic> {}
 
 void main() {
   group('OperatorSessionController', () {
-    test('isConnected returns true if currentUserId is not null', () {
-      final controller = FakeOperatorSession(currentUserId: '123');
+    test('isConnected returns true if currentOperatorID is not null', () {
+      final controller = FakeOperatorSession(currentOperatorID: '123');
       expect(controller.isConnected, isTrue);
     });
 
-    test('isConnected returns false if currentUserId is null', () {
+    test('isConnected returns false if currentOperatorID is null', () {
       final controller = FakeOperatorSession();
       expect(controller.isConnected, isFalse);
     });
@@ -94,8 +94,11 @@ void main() {
     tearDown(() => notified = false);
 
     void mockRPC({
-      String uid = 'uid',
-      String name = 'Test',
+      String operatorID = 'operatorID',
+      String authID = 'uid',
+      String firstName = 'Test',
+      String lastName = 'User',
+      String? nickname,
       bool isAdmin = false,
       bool active = false,
     }) {
@@ -110,7 +113,10 @@ void main() {
         final cb = invocation.positionalArguments.first as dynamic Function(
             Map<String, dynamic>);
         return Future.value(cb({
-          'name': name,
+          'id': operatorID,
+          'first_name': firstName,
+          'last_name': lastName,
+          'nickname': nickname,
           'is_admin': isAdmin,
           'active': active,
         }));
@@ -118,7 +124,7 @@ void main() {
 
       when(() => mockAuth.currentSession).thenReturn(mockSession);
       when(() => mockAuth.currentUser).thenReturn(mockUser);
-      when(() => mockUser.id).thenReturn(uid);
+      when(() => mockUser.id).thenReturn(authID);
 
       when(() => mockChannel.onPostgresChanges(
             event: PostgresChangeEvent.update,
@@ -135,11 +141,15 @@ void main() {
     testWidgets('Init without user logged', (tester) async {
       session.init();
 
-      expect(notified, true);
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, isNull);
+      expect(session.firstName, isNull);
+      expect(session.lastName, isNull);
+      expect(session.nickname, isNull);
       expect(session.name, isNull);
       expect(session.isAdmin, isFalse);
       expect(session.isActive, isFalse);
-      expect(session.currentUserId, isNull);
+      expect(session.isConnected, isFalse);
     });
 
     testWidgets('OperatorSession reacts to all auth cases and realtime updates',
@@ -147,46 +157,70 @@ void main() {
       mockRPC();
 
       await session.init();
-      expect(notified, true);
-      expect(session.name, 'Test');
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, 'operatorID');
+      expect(session.firstName, 'Test');
+      expect(session.lastName, 'User');
+      expect(session.nickname, isNull);
+      expect(session.name, 'Test User');
       expect(session.isAdmin, isFalse);
       expect(session.isActive, isFalse);
-      expect(session.currentUserId, 'uid');
+      expect(session.isConnected, isTrue);
 
       notified = false;
       authStreamController
           .add(const AuthState(AuthChangeEvent.signedOut, null));
       await tester.pump();
 
-      expect(notified, true);
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, isNull);
+      expect(session.firstName, isNull);
+      expect(session.lastName, isNull);
+      expect(session.nickname, isNull);
       expect(session.name, isNull);
       expect(session.isAdmin, isFalse);
       expect(session.isActive, isFalse);
-      expect(session.currentUserId, isNull);
+      expect(session.isConnected, isFalse);
 
       notified = false;
-      mockRPC(uid: 'uid2', name: 'Second', isAdmin: true, active: true);
+      mockRPC(
+        operatorID: 'operatorID2',
+        authID: 'uid2',
+        firstName: 'Second',
+        lastName: 'Collaborator',
+        nickname: 'SC',
+        isAdmin: true,
+        active: true,
+      );
       authStreamController
           .add(AuthState(AuthChangeEvent.signedIn, mockSession));
       await tester.pump();
 
-      expect(notified, true);
-      expect(session.name, 'Second');
-      expect(session.isAdmin, true);
-      expect(session.isActive, true);
-      expect(session.currentUserId, 'uid2');
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, 'operatorID2');
+      expect(session.firstName, 'Second');
+      expect(session.lastName, 'Collaborator');
+      expect(session.nickname, 'SC');
+      expect(session.name, 'Second Collaborator (SC)');
+      expect(session.isAdmin, isTrue);
+      expect(session.isActive, isTrue);
+      expect(session.isConnected, isTrue);
 
       notified = false;
-      mockRPC(uid: 'other_user');
+      mockRPC(operatorID: 'other_user', authID: 'other_auth');
       authStreamController
           .add(AuthState(AuthChangeEvent.tokenRefreshed, mockSession));
       await tester.pump();
 
-      expect(notified, true);
-      expect(session.name, 'Test');
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, 'other_user');
+      expect(session.firstName, 'Test');
+      expect(session.lastName, 'User');
+      expect(session.nickname, isNull);
+      expect(session.name, 'Test User');
       expect(session.isAdmin, isFalse);
       expect(session.isActive, isFalse);
-      expect(session.currentUserId, 'other_user');
+      expect(session.isConnected, isTrue);
 
       notified = false;
       onChangeCallback!.call(PostgresChangePayload(
@@ -194,15 +228,29 @@ void main() {
           table: 'operators',
           commitTimestamp: DateTime.now(),
           eventType: PostgresChangeEvent.update,
-          newRecord: {'name': 'Updated', 'is_admin': true, 'active': true},
-          oldRecord: {'name': 'Second'},
+          newRecord: {
+            'first_name': 'Updated',
+            'last_name': 'User',
+            'nickname': null,
+            'is_admin': true,
+            'active': true,
+          },
+          oldRecord: {
+            'first_name': 'Test',
+            'last_name': 'User',
+            'nickname': null,
+          },
           errors: null));
 
-      expect(notified, true);
-      expect(session.name, 'Updated');
-      expect(session.isAdmin, true);
-      expect(session.isActive, true);
-      expect(session.currentUserId, 'other_user');
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, 'other_user');
+      expect(session.firstName, 'Updated');
+      expect(session.lastName, 'User');
+      expect(session.nickname, isNull);
+      expect(session.name, 'Updated User');
+      expect(session.isAdmin, isTrue);
+      expect(session.isActive, isTrue);
+      expect(session.isConnected, isTrue);
 
       // Force RPC failure
       final mockFilterError = MockPostgrestFilterBuilder();
@@ -215,11 +263,15 @@ void main() {
           .add(AuthState(AuthChangeEvent.signedIn, mockSession));
       await tester.pump();
 
-      expect(notified, true);
+      expect(notified, isTrue);
+      expect(session.currentOperatorID, isNull);
+      expect(session.firstName, isNull);
+      expect(session.lastName, isNull);
+      expect(session.nickname, isNull);
       expect(session.name, isNull);
       expect(session.isAdmin, isFalse);
       expect(session.isActive, isFalse);
-      expect(session.currentUserId, isNull);
+      expect(session.isConnected, isFalse);
     });
 
     testWidgets('logout() calls navigator pushNamedAndRemoveUntil',

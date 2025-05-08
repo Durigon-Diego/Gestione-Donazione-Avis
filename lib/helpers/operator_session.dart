@@ -9,25 +9,47 @@ class OperatorSession extends OperatorSessionController {
   factory OperatorSession() => _instance;
   OperatorSession._internal();
 
-  String? _name;
+  bool _initialized = false;
+
+  String? _currentAuthID;
+
+  String? _currentOperatorID;
+  String? _firstName;
+  String? _lastName;
+  String? _nickname;
   bool _isAdmin = false;
   bool _isActive = false;
-  String? _currentUserId;
-
-  @override
-  String? get name => _name;
-  @override
-  bool get isAdmin => _isAdmin;
-  @override
-  bool get isActive => _isActive;
-  @override
-  String? get currentUserId => _currentUserId;
 
   RealtimeChannel? _channel;
+
+  @override
+  String? get currentOperatorID => _currentOperatorID;
+
+  @override
+  String? get firstName => _firstName;
+
+  @override
+  String? get lastName => _lastName;
+
+  @override
+  String? get nickname => _nickname;
+
+  @override
+  bool get isAdmin => _isAdmin;
+
+  @override
+  bool get isActive => _isActive;
+
+  @override
+  bool get isConnected =>
+      _initialized &&
+      _currentAuthID == Supabase.instance.client.auth.currentUser?.id &&
+      _currentOperatorID?.isNotEmpty == true;
 
   /// Initialize session once if already signed in
   @override
   Future<void> init() async {
+    _initialized = true;
     Supabase.instance.client.auth.onAuthStateChange.listen(_handleAuthChange);
 
     if (Supabase.instance.client.auth.currentSession != null) {
@@ -46,8 +68,8 @@ class OperatorSession extends OperatorSessionController {
       logInfo('User not logged');
       _clear();
       return;
-    } else if (_currentUserId != session.user.id) {
-      logInfo('User changed: "$_currentUserId" <> "${session.user.id}"');
+    } else if (_currentAuthID != session.user.id) {
+      logInfo('User changed: "$_currentAuthID" <> "${session.user.id}"');
       _clear();
     }
     if (event == AuthChangeEvent.signedIn ||
@@ -63,15 +85,18 @@ class OperatorSession extends OperatorSessionController {
           .rpc('get_my_operator_profile')
           .single();
 
-      _currentUserId = Supabase.instance.client.auth.currentUser?.id;
-      _name = result['name'] as String?;
+      _currentAuthID = Supabase.instance.client.auth.currentUser?.id;
+      _currentOperatorID = result['id'] as String?;
+      _firstName = result['first_name'] as String?;
+      _lastName = result['last_name'] as String?;
+      _nickname = result['nickname'] as String?;
       _isAdmin = result['is_admin'] == true;
       _isActive = result['active'] == true;
 
       notifyListeners();
 
-      logInfo('User "$_name" logged: data retrieved');
-      _subscribeToOperatorChanges(_currentUserId!);
+      logInfo('User "$name" logged: data retrieved');
+      _subscribeToOperatorChanges(_currentAuthID!);
     } catch (error, stackTrace) {
       logError(
         'Error updating user data',
@@ -84,27 +109,30 @@ class OperatorSession extends OperatorSessionController {
   }
 
   /// Subscribe to real-time changes on the current operator
-  void _subscribeToOperatorChanges(String userId) {
+  void _subscribeToOperatorChanges(String authID) {
     _channel?.unsubscribe();
 
     _channel = Supabase.instance.client
-        .channel('public:operators:user_$userId')
+        .channel('public:operators:user_$authID')
         .onPostgresChanges(
           event: PostgresChangeEvent.update,
           schema: 'public',
           table: 'operators',
           filter: PostgresChangeFilter(
-            column: 'id',
+            column: 'auth_user_id',
             type: PostgresChangeFilterType.eq,
-            value: userId,
+            value: authID,
           ),
           callback: (payload) {
-            _name = payload.newRecord['name'] as String?;
+            _firstName = payload.newRecord['first_name'] as String?;
+            _lastName = payload.newRecord['last_name'] as String?;
+            _nickname = payload.newRecord['nickname'] as String?;
             _isAdmin = payload.newRecord['is_admin'] == true;
             _isActive = payload.newRecord['active'] == true;
 
-            logInfo(
-                'Data changed for user "$_name" (was ${payload.oldRecord['name']})');
+            logInfo('Data changed for user "$name" '
+                '(was ${payload.oldRecord['first_name']} ${payload.oldRecord['last_name']}'
+                '${payload.newRecord['nickname']?.isNotEmpty == true ? ' (${payload.newRecord['nickname']})' : ''})');
             notifyListeners();
           },
         )
@@ -113,10 +141,13 @@ class OperatorSession extends OperatorSessionController {
 
   /// Clear session data
   void _clear() {
-    _name = null;
+    _currentOperatorID = null;
+    _currentAuthID = null;
+    _firstName = null;
+    _lastName = null;
+    _nickname = null;
     _isAdmin = false;
     _isActive = false;
-    _currentUserId = null;
     _channel?.unsubscribe();
     _channel = null;
     logInfo('Cleaned current user informations');

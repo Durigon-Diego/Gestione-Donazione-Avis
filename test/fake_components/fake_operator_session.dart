@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donation_management/helpers/operator_session_controller.dart';
 
 /// Fake implementation of OperatorSessionController for tests
 class FakeOperatorSession extends OperatorSessionController {
   @override
-  String? name;
+  String? currentOperatorID;
+
+  @override
+  String? firstName;
+
+  @override
+  String? lastName;
+
+  @override
+  String? nickname;
 
   @override
   bool isAdmin;
@@ -14,34 +22,34 @@ class FakeOperatorSession extends OperatorSessionController {
   @override
   bool isActive;
 
-  @override
-  String? currentUserId;
-
   FakeOperatorSession({
-    this.name,
+    this.currentOperatorID,
+    this.firstName,
+    this.lastName,
+    this.nickname,
     this.isActive = true,
     this.isAdmin = false,
-    this.currentUserId,
   });
 
   void setState({
-    String? name,
-    bool? active,
-    bool? admin,
-    String? userId,
+    String? currentOperatorID,
+    String? firstName,
+    String? lastName,
+    String? nickname,
+    bool isActive = true,
+    bool isAdmin = false,
   }) {
-    this.name = name ?? this.name;
-    isActive = active ?? isActive;
-    isAdmin = admin ?? isAdmin;
-    currentUserId = userId ?? currentUserId;
+    this.currentOperatorID = currentOperatorID;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.nickname = nickname;
+    this.isActive = isActive;
+    this.isAdmin = isAdmin;
     notifyListeners();
   }
 
   /// Optional test callbacks for behavioral verification
-  void Function() onClear = () {};
-  void Function(AuthState data) onHandleAuthChange = (_) {};
   void Function() onInit = () {};
-  void Function() onLoadFromSupabase = () {};
   void Function([BuildContext? context]) onLogout = ([BuildContext? _]) {};
 
   @override

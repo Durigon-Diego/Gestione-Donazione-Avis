@@ -74,7 +74,7 @@ void main() {
             email: any(named: 'email'),
             password: any(named: 'password'),
           )).thenAnswer((_) async {
-        session.setState(userId: '123', active: active);
+        session.setState(currentOperatorID: '123', isActive: active);
         when(() => mockUser.id).thenReturn('123');
         when(() => mockAuth.currentSession).thenReturn(mockSession);
         return AuthResponse(session: mockSession, user: mockUser);
@@ -184,7 +184,7 @@ void main() {
     testWidgets('user already connected redirects to donation if active',
         (tester) async {
       final session = FakeOperatorSession();
-      session.setState(userId: 'abc', active: true);
+      session.setState(currentOperatorID: 'abc', isActive: true);
       await pumpLoginPage(tester, session);
 
       expect(find.text('Donazione'), findsOneWidget);
@@ -193,7 +193,7 @@ void main() {
     testWidgets('user already connected redirects to not_active if not active',
         (tester) async {
       final session = FakeOperatorSession();
-      session.setState(userId: 'abc', active: false);
+      session.setState(currentOperatorID: 'abc', isActive: false);
       await pumpLoginPage(tester, session);
 
       expect(find.text('Non Attivo'), findsOneWidget);

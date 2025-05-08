@@ -84,7 +84,12 @@ void main() {
     });
 
     testWidgets('drawer opens and contains user name and role', (tester) async {
-      operatorSession.setState(name: 'Mario Rossi', admin: true, active: true);
+      operatorSession.setState(
+        firstName: 'Mario',
+        lastName: 'Rossi',
+        isAdmin: true,
+        isActive: true,
+      );
 
       await tester.pumpWidget(
         MaterialApp(

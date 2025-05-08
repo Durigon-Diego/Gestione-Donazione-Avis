@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donation_management/helpers/logger_helper.dart';
 import 'package:avis_donation_management/helpers/app_info_controller.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
@@ -39,10 +38,7 @@ class _OperatorsPageState extends State<OperatorsPage> {
 
   void _checkRedirect() {
     _showContent = false;
-    if (widget.operatorSession.currentUserId != null &&
-        widget.operatorSession.currentUserId ==
-            Supabase.instance.client.auth.currentUser?.id &&
-        !widget.operatorSession.isAdmin) {
+    if (widget.operatorSession.isConnected && !widget.operatorSession.isAdmin) {
       logWarning(
           "User '${widget.operatorSession.name}' is not an admin, redirecting");
       final nav =

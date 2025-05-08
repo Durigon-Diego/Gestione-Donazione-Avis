@@ -1,0 +1,6 @@
+[sqlfluff]
+dialect = postgres
+max_line_length = 120
+
+[layout]
+indents = 4

@@ -26,8 +26,12 @@ void main() {
 
     testWidgets('displays base items for active operator', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession =
-          FakeOperatorSession(name: 'Mario', isActive: true, isAdmin: false);
+      final fakeOperatorSession = FakeOperatorSession(
+        firstName: 'Mario',
+        lastName: 'Rossi',
+        isActive: true,
+        isAdmin: false,
+      );
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -91,7 +95,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pumpAndSettle();
 
-      expect(find.text('Mario'), findsOneWidget);
+      expect(find.text('Mario Rossi'), findsOneWidget);
       expect(find.text('Operatore'), findsOneWidget);
       expect(find.text('Gestione Account'), findsOneWidget);
       expect(find.text('Donazione'), findsOneWidget);
@@ -113,8 +117,12 @@ void main() {
 
     testWidgets('displays all items for active admin', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession =
-          FakeOperatorSession(name: 'Admin', isActive: true, isAdmin: true);
+      final fakeOperatorSession = FakeOperatorSession(
+        firstName: 'Admin',
+        lastName: 'User',
+        isActive: true,
+        isAdmin: true,
+      );
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -178,7 +186,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pumpAndSettle();
 
-      expect(find.text('Admin'), findsOneWidget);
+      expect(find.text('Admin User'), findsOneWidget);
       expect(find.text('Amministratore'), findsOneWidget);
       expect(find.text('Gestione Account'), findsOneWidget);
       expect(find.text('Donazione'), findsOneWidget);
@@ -214,8 +222,13 @@ void main() {
 
     testWidgets('displays limited items for inactive operator', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession =
-          FakeOperatorSession(name: 'Giulia', isActive: false, isAdmin: false);
+      final fakeOperatorSession = FakeOperatorSession(
+        firstName: 'Giulia',
+        lastName: 'Bianchi',
+        nickname: 'GB',
+        isActive: false,
+        isAdmin: false,
+      );
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -279,7 +292,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pumpAndSettle();
 
-      expect(find.text('Giulia'), findsOneWidget);
+      expect(find.text('Giulia Bianchi (GB)'), findsOneWidget);
       expect(find.text('Operatore'), findsOneWidget);
       expect(find.text('Gestione Account'), findsOneWidget);
       expect(find.text('Donazione'), findsOneWidget);
@@ -301,8 +314,12 @@ void main() {
 
     testWidgets('displays extra items for inactive admin', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession =
-          FakeOperatorSession(name: 'Luca', isActive: false, isAdmin: true);
+      final fakeOperatorSession = FakeOperatorSession(
+        firstName: 'Luca',
+        lastName: 'Verdi',
+        isActive: false,
+        isAdmin: true,
+      );
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -366,7 +383,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pumpAndSettle();
 
-      expect(find.text('Luca'), findsOneWidget);
+      expect(find.text('Luca Verdi'), findsOneWidget);
       expect(find.text('Amministratore'), findsOneWidget);
       expect(find.text('Gestione Account'), findsOneWidget);
       expect(find.text('Donazione'), findsOneWidget);
@@ -402,8 +419,12 @@ void main() {
 
     testWidgets('reacts to dynamic session changes', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession =
-          FakeOperatorSession(name: 'Mario', isActive: false, isAdmin: false);
+      final fakeOperatorSession = FakeOperatorSession(
+        firstName: 'Mario',
+        lastName: 'Rossi',
+        isActive: false,
+        isAdmin: false,
+      );
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
@@ -420,26 +441,29 @@ void main() {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pumpAndSettle();
 
-      expect(find.text('Mario'), findsOneWidget);
+      expect(find.text('Mario Rossi'), findsOneWidget);
       expect(find.text('Operatore'), findsOneWidget);
       expect(find.text('Donazione'), findsOneWidget);
       expect(find.byIcon(Icons.lock), findsOneWidget);
       expect(find.text('Gestione Operatori'), findsNothing);
 
-      fakeOperatorSession.setState(active: true);
+      fakeOperatorSession.setState(isActive: true);
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.lock), findsNothing);
       expect(find.byIcon(Icons.water_drop), findsOneWidget);
 
-      fakeOperatorSession.setState(admin: true);
+      fakeOperatorSession.setState(isAdmin: true);
       await tester.pumpAndSettle();
       expect(find.text('Gestione Operatori'), findsOneWidget);
 
-      fakeOperatorSession.setState(name: 'Luigi');
+      fakeOperatorSession.setState(
+        firstName: 'Luigi',
+        lastName: 'Longobardi',
+      );
       await tester.pumpAndSettle();
-      expect(find.text('Luigi'), findsOneWidget);
+      expect(find.text('Luigi Longobardi'), findsOneWidget);
 
-      fakeOperatorSession.setState(admin: false, active: false);
+      fakeOperatorSession.setState(isAdmin: false, isActive: false);
       await tester.pumpAndSettle();
       expect(find.text('Gestione Operatori'), findsNothing);
       expect(find.byIcon(Icons.lock), findsOneWidget);
@@ -533,8 +557,12 @@ void main() {
       'reacts to dynamic session changes and handles connectivity loss',
       (tester) async {
         final fakeAppInfo = FakeAppInfo();
-        final fakeOperatorSession =
-            FakeOperatorSession(name: 'Mario', isActive: false, isAdmin: false);
+        final fakeOperatorSession = FakeOperatorSession(
+          firstName: 'Mario',
+          lastName: 'Rossi',
+          isActive: false,
+          isAdmin: false,
+        );
 
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -551,26 +579,29 @@ void main() {
         await tester.tap(find.byIcon(Icons.menu));
         await tester.pumpAndSettle();
 
-        expect(find.text('Mario'), findsOneWidget);
+        expect(find.text('Mario Rossi'), findsOneWidget);
         expect(find.text('Operatore'), findsOneWidget);
         expect(find.text('Donazione'), findsOneWidget);
         expect(find.byIcon(Icons.lock), findsOneWidget);
         expect(find.text('Gestione Operatori'), findsNothing);
 
-        fakeOperatorSession.setState(active: true);
+        fakeOperatorSession.setState(isActive: true);
         await tester.pumpAndSettle();
         expect(find.byIcon(Icons.lock), findsNothing);
         expect(find.byIcon(Icons.water_drop), findsOneWidget);
 
-        fakeOperatorSession.setState(admin: true);
+        fakeOperatorSession.setState(isAdmin: true);
         await tester.pumpAndSettle();
         expect(find.text('Gestione Operatori'), findsOneWidget);
 
-        fakeOperatorSession.setState(name: 'Luigi');
+        fakeOperatorSession.setState(
+          firstName: 'Luigi',
+          lastName: 'Longobardi',
+        );
         await tester.pumpAndSettle();
-        expect(find.text('Luigi'), findsOneWidget);
+        expect(find.text('Luigi Longobardi'), findsOneWidget);
 
-        fakeOperatorSession.setState(admin: false, active: false);
+        fakeOperatorSession.setState(isAdmin: false, isActive: false);
         await tester.pumpAndSettle();
         expect(find.text('Gestione Operatori'), findsNothing);
         expect(find.byIcon(Icons.lock), findsOneWidget);
@@ -617,7 +648,7 @@ void main() {
         );
 
         // Simulate connection restored and operator now active
-        fakeOperatorSession.setState(active: true);
+        fakeOperatorSession.setState(isActive: true);
         fakeConnectionStatus.setState(ServerStatus.connected);
         await tester.pumpAndSettle();
         expect(

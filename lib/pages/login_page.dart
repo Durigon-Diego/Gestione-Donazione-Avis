@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
 
       _sessionListener = () {
         // Ignore if the current active user is still the previous one
-        if (widget.operatorSession.currentUserId != null) {
+        if (widget.operatorSession.currentOperatorID != null) {
           completer.complete();
         }
       };
@@ -103,8 +103,7 @@ class _LoginPageState extends State<LoginPage> {
       final response = await Supabase.instance.client.auth
           .signInWithPassword(email: email, password: password);
 
-      final userId = response.user?.id;
-      if (userId == null) {
+      if (response.user?.id == null) {
         throw LoginException('Autenticazione fallita.');
       }
 

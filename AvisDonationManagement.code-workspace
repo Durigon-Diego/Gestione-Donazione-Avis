@@ -8,6 +8,6 @@
     "dart.flutterSdkPath": "../flutter",
     "dart.analysisExcludedFolders": [
       "build"
-    ]
+    ],
   }
 }

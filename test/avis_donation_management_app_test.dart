@@ -30,7 +30,7 @@ void main() {
     });
 
     testWidgets('shows LoginPage when not connected', (tester) async {
-      fakeOperatorSession.setState(userId: null);
+      fakeOperatorSession.setState(currentOperatorID: null);
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -50,7 +50,7 @@ void main() {
     });
 
     testWidgets('shows DonationPage when connected', (tester) async {
-      fakeOperatorSession.setState(userId: 'test_user');
+      fakeOperatorSession.setState(currentOperatorID: 'test_user');
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -69,7 +69,7 @@ void main() {
     });
 
     testWidgets('has correct supported locales', (tester) async {
-      fakeOperatorSession.setState(userId: 'test_user');
+      fakeOperatorSession.setState(currentOperatorID: 'test_user');
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -152,7 +152,7 @@ void main() {
         'connected flow initializes properly and does not remove listener after dispose',
         (tester) async {
       fakeConnectionStatus.setState(ServerStatus.connected);
-      fakeOperatorSession.setState(userId: 'user123');
+      fakeOperatorSession.setState(currentOperatorID: 'user123');
 
       expect(fakeConnectionStatus.numListener, equals(0));
 
@@ -183,7 +183,7 @@ void main() {
       when(() => mockOperatorSession.init())
           .thenThrow(Exception('Fake init error'));
       when(() => mockOperatorSession.isConnected).thenReturn(false);
-      when(() => mockOperatorSession.currentUserId).thenReturn(null);
+      when(() => mockOperatorSession.currentOperatorID).thenReturn(null);
       when(() => mockOperatorSession.isAdmin).thenReturn(false);
       when(() => mockOperatorSession.isActive).thenReturn(false);
 
@@ -250,7 +250,7 @@ void main() {
     }
 
     testWidgets('navigates to /login route', (tester) async {
-      fakeOperatorSession.setState(userId: null);
+      fakeOperatorSession.setState(currentOperatorID: null);
       await testRoute(
         tester: tester,
         route: '/login',
@@ -259,7 +259,8 @@ void main() {
     });
 
     testWidgets('navigates to /not_active route', (tester) async {
-      fakeOperatorSession.setState(userId: 'x', active: false, admin: false);
+      fakeOperatorSession.setState(
+          currentOperatorID: 'x', isActive: false, isAdmin: false);
       await testRoute(
         tester: tester,
         route: '/not_active',
@@ -268,7 +269,7 @@ void main() {
     });
 
     testWidgets('navigates to /donation route', (tester) async {
-      fakeOperatorSession.setState(userId: 'x', active: true);
+      fakeOperatorSession.setState(currentOperatorID: 'x', isActive: true);
       await testRoute(
         tester: tester,
         route: '/donation',
@@ -277,7 +278,7 @@ void main() {
     });
 
     testWidgets('navigates to /account route', (tester) async {
-      fakeOperatorSession.setState(userId: 'x', active: true);
+      fakeOperatorSession.setState(currentOperatorID: 'x', isActive: true);
       await testRoute(
         tester: tester,
         route: '/account',
@@ -286,7 +287,8 @@ void main() {
     });
 
     testWidgets('navigates to /operators route', (tester) async {
-      fakeOperatorSession.setState(userId: 'x', active: true, admin: true);
+      fakeOperatorSession.setState(
+          currentOperatorID: 'x', isActive: true, isAdmin: true);
       await testRoute(
         tester: tester,
         route: '/operators',
@@ -295,7 +297,11 @@ void main() {
     });
 
     testWidgets('navigates to /donations_days route', (tester) async {
-      fakeOperatorSession.setState(userId: 'x', active: true, admin: true);
+      fakeOperatorSession.setState(
+        currentOperatorID: 'x',
+        isActive: true,
+        isAdmin: true,
+      );
       await testRoute(
         tester: tester,
         route: '/donations_days',
