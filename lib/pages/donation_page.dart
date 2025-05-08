@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:avis_donation_management/helpers/logger_helper.dart';
 import 'package:avis_donation_management/helpers/app_info_controller.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
 import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/components/protected_pages.dart';
 import 'package:avis_donation_management/components/avis_bottom_navigation_bar.dart';
-import 'package:avis_donation_management/components/avis_scaffold.dart';
 
 /// Donation page with bottom navigation and drawer menu
 class DonationPage extends StatefulWidget {
@@ -23,7 +22,6 @@ class DonationPage extends StatefulWidget {
 }
 
 class _DonationPageState extends State<DonationPage> {
-  bool _showContent = false;
   int _selectedIndex = 0;
 
   /// List of tab pages
@@ -51,34 +49,6 @@ class _DonationPageState extends State<DonationPage> {
         icon: Icons.volunteer_activism, label: 'Donazione'),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    widget.operatorSession.addListener(_checkRedirect);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
-  }
-
-  @override
-  void dispose() {
-    widget.operatorSession.removeListener(_checkRedirect);
-    super.dispose();
-  }
-
-  void _checkRedirect() {
-    _showContent = false;
-    if (widget.operatorSession.isConnected &&
-        !widget.operatorSession.isActive) {
-      logWarning(
-          "User '${widget.operatorSession.name}' is not active, redirecting");
-      final nav =
-          context.mounted ? Navigator.of(context) : navigatorKey.currentState;
-      nav?.pushNamedAndRemoveUntil('/not_active', (_) => false);
-    } else {
-      _showContent = true;
-      setState(() {});
-    }
-  }
-
   /// Handle tab switching
   void _onTabTapped(int index) {
     setState(() {
@@ -88,26 +58,18 @@ class _DonationPageState extends State<DonationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return !_showContent
-        ? AvisScaffold(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
-            operatorSession: widget.operatorSession,
-            title: '',
-            body: const SizedBox.shrink(),
-          )
-        : AvisScaffold(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
-            operatorSession: widget.operatorSession,
-            title: _titles[_selectedIndex],
-            body: _pages[_selectedIndex],
-            bottomNavData: AvisBottomNavigationBarData(
-              items: _navItems,
-              currentIndex: _selectedIndex,
-              onTap: _onTabTapped,
-            ),
-          );
+    return _DonationPageBody(
+      appInfo: widget.appInfo,
+      connectionStatus: widget.connectionStatus,
+      operatorSession: widget.operatorSession,
+      title: _titles[_selectedIndex],
+      body: _pages[_selectedIndex],
+      bottomNavData: AvisBottomNavigationBarData(
+        items: _navItems,
+        currentIndex: _selectedIndex,
+        onTap: _onTabTapped,
+      ),
+    );
   }
 }
 
@@ -149,4 +111,16 @@ class DonationDonePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(child: Text('Gestione donazione'));
   }
+}
+
+class _DonationPageBody extends ProtectedAvisScaffoldedPage
+    with LoggedCheck, ActiveCheck {
+  _DonationPageBody({
+    required super.appInfo,
+    required super.connectionStatus,
+    required super.operatorSession,
+    required super.title,
+    required super.body,
+    required super.bottomNavData,
+  });
 }

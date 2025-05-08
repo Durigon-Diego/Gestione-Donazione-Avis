@@ -1,98 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:avis_donation_management/helpers/logger_helper.dart';
-import 'package:avis_donation_management/helpers/app_info_controller.dart';
-import 'package:avis_donation_management/helpers/connection_status_controller.dart';
-import 'package:avis_donation_management/helpers/operator_session_controller.dart';
 import 'package:avis_donation_management/components/avis_theme.dart';
-import 'package:avis_donation_management/components/avis_scaffold.dart';
+import 'package:avis_donation_management/components/protected_pages.dart';
 
-/// Page shown when an operator is not active
-class NotActivePage extends StatefulWidget {
-  final AppInfoController appInfo;
-  final ConnectionStatusController connectionStatus;
-  final OperatorSessionController operatorSession;
-  const NotActivePage({
+class NotActivePage extends ProtectedAvisScaffoldedPage with LoggedCheck {
+  NotActivePage({
     super.key,
-    required this.appInfo,
-    required this.connectionStatus,
-    required this.operatorSession,
-  });
-
-  @override
-  State<NotActivePage> createState() => _NotActivePageState();
-}
-
-class _NotActivePageState extends State<NotActivePage> {
-  bool _showContent = false;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.operatorSession.addListener(_checkRedirect);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
-  }
-
-  @override
-  void dispose() {
-    widget.operatorSession.removeListener(_checkRedirect);
-    super.dispose();
-  }
-
-  void _checkRedirect() {
-    _showContent = false;
-    if (widget.operatorSession.isConnected && widget.operatorSession.isActive) {
-      logWarning(
-          "User '${widget.operatorSession.name}' is not inactive, redirecting");
-      final nav =
-          context.mounted ? Navigator.of(context) : navigatorKey.currentState;
-      nav?.pushNamedAndRemoveUntil('/donation', (_) => false);
-    } else {
-      _showContent = true;
-      setState(() {});
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isAdmin = widget.operatorSession.isAdmin;
-
-    return !_showContent
-        ? AvisScaffold(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
-            operatorSession: widget.operatorSession,
-            title: '',
-            body: const SizedBox.shrink(),
-          )
-        : AvisScaffold(
-            appInfo: widget.appInfo,
-            connectionStatus: widget.connectionStatus,
-            operatorSession: widget.operatorSession,
-            title: 'Utente non attivo',
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        size: 60, color: AvisColors.red),
-                    const SizedBox(height: 16),
+    required super.appInfo,
+    required super.connectionStatus,
+    required super.operatorSession,
+  }) : super(
+          title: 'Utente non attivo',
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.warning_amber_rounded,
+                      size: 60, color: AvisColors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Utente non attivo',
+                    style: AvisTheme.errorTextStyle,
+                  ),
+                  if (!operatorSession.isAdmin) ...{
+                    const SizedBox(height: 12),
                     const Text(
-                      'Utente non attivo',
-                      style: AvisTheme.errorTextStyle,
+                      'Contattare un amministratore per abilitare l\'accesso.',
+                      textAlign: TextAlign.center,
                     ),
-                    if (!isAdmin) ...{
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Contattare un amministratore per abilitare l\'accesso.',
-                        textAlign: TextAlign.center,
-                      ),
-                    }
-                  ],
-                ),
+                  }
+                ],
               ),
             ),
-          );
-  }
+          ),
+        );
 }
