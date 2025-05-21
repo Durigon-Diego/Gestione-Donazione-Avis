@@ -13,6 +13,7 @@ enum ServerStatus {
 /// - internet availability
 /// - supabase connection status
 abstract class ConnectionStatusController extends ChangeNotifier {
+  bool get initialized;
   ServerStatus get state;
 
   Future<void> init();

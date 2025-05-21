@@ -17,6 +17,99 @@ import 'package:avis_donation_management/pages/account_page.dart';
 import 'package:avis_donation_management/pages/operators_page.dart';
 import 'package:avis_donation_management/pages/donation_days_page.dart';
 
+Widget Function({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) notActivePageBuilder = ({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) {
+  return NotActivePage(
+    appInfo: appInfo,
+    connectionStatus: connectionStatus,
+    operatorSession: operatorSession,
+  );
+};
+
+Widget Function({
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) loginPageBuilder = ({
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) {
+  return LoginPage(
+    connectionStatus: connectionStatus,
+    operatorSession: operatorSession,
+  );
+};
+
+Widget Function({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) donationPageBuilder = ({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) {
+  return DonationPage(
+    appInfo: appInfo,
+    connectionStatus: connectionStatus,
+    operatorSession: operatorSession,
+  );
+};
+
+Widget Function({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) accountPageBuilder = ({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) {
+  return AccountPage(
+    appInfo: appInfo,
+    connectionStatus: connectionStatus,
+    operatorSession: operatorSession,
+  );
+};
+
+Widget Function({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) operatorsPageBuilder = ({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) {
+  return OperatorsPage(
+    appInfo: appInfo,
+    connectionStatus: connectionStatus,
+    operatorSession: operatorSession,
+  );
+};
+
+Widget Function({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) donationDaysPageBuilder = ({
+  required AppInfoController appInfo,
+  required ConnectionStatusController connectionStatus,
+  required OperatorSessionController operatorSession,
+}) {
+  return DonationDaysPage(
+    appInfo: appInfo,
+    connectionStatus: connectionStatus,
+    operatorSession: operatorSession,
+  );
+};
+
 /// Main application widget
 class AvisDonationManagementApp extends StatefulWidget {
   final AppInfoController appInfo;
@@ -41,6 +134,7 @@ class _AvisDonationManagementAppState extends State<AvisDonationManagementApp> {
   late final OperatorSessionController operatorSession;
   late final FlutterAuthClientOptions authOptions;
   bool _connectedOnce = false;
+  bool _listenerCreated = false;
 
   @override
   void initState() {
@@ -49,26 +143,36 @@ class _AvisDonationManagementAppState extends State<AvisDonationManagementApp> {
         widget.connectionStatus ?? ConnectionStatus(appInfo: widget.appInfo);
     operatorSession = widget.operatorSession ?? OperatorSession();
     authOptions = widget.authOptions ?? const FlutterAuthClientOptions();
-    connectionStatus.addListener(_handleFirstConnection);
-    unawaited(connectionStatus.init());
-    _handleFirstConnection();
+    unawaited(initStateAsync());
+  }
+
+  Future<void> initStateAsync() async {
+    await connectionStatus.init();
+    await _handleFirstConnection();
+    if (!_connectedOnce) {
+      connectionStatus.addListener(_handleFirstConnection);
+      _listenerCreated = true;
+    }
   }
 
   Future<void> _handleFirstConnection() async {
-    if (ServerStatus.connected == connectionStatus.state) {
+    if (ServerStatus.connected == connectionStatus.state && !_connectedOnce) {
       try {
         await Supabase.initialize(
           url: widget.appInfo.supabaseURL,
           anonKey: widget.appInfo.supabaseKey,
           authOptions: authOptions,
         );
+        _connectedOnce = true;
 
         await operatorSession.init();
 
         logInfo('Operator Session initialized');
 
-        connectionStatus.removeListener(_handleFirstConnection);
-        _connectedOnce = true;
+        if (_listenerCreated) {
+          connectionStatus.removeListener(_handleFirstConnection);
+          _listenerCreated = false;
+        }
 
         setState(() {});
 
@@ -86,8 +190,9 @@ class _AvisDonationManagementAppState extends State<AvisDonationManagementApp> {
 
   @override
   void dispose() {
-    if (!_connectedOnce) {
+    if (_listenerCreated) {
       connectionStatus.removeListener(_handleFirstConnection);
+      _listenerCreated = false;
     }
     super.dispose();
   }
@@ -100,34 +205,34 @@ class _AvisDonationManagementAppState extends State<AvisDonationManagementApp> {
       debugShowCheckedModeBanner: false,
       title: widget.appInfo.appName,
       home: operatorSession.isConnected
-          ? DonationPage(
+          ? donationPageBuilder(
               appInfo: widget.appInfo,
               connectionStatus: connectionStatus,
               operatorSession: operatorSession)
-          : LoginPage(
+          : loginPageBuilder(
               connectionStatus: connectionStatus,
               operatorSession: operatorSession),
       routes: {
-        '/login': (context) => LoginPage(
+        '/login': (context) => loginPageBuilder(
             connectionStatus: connectionStatus,
             operatorSession: operatorSession),
-        '/not_active': (context) => NotActivePage(
+        '/not_active': (context) => notActivePageBuilder(
             appInfo: widget.appInfo,
             connectionStatus: connectionStatus,
             operatorSession: operatorSession),
-        '/donation': (context) => DonationPage(
+        '/donation': (context) => donationPageBuilder(
             appInfo: widget.appInfo,
             connectionStatus: connectionStatus,
             operatorSession: operatorSession),
-        '/account': (context) => AccountPage(
+        '/account': (context) => accountPageBuilder(
             appInfo: widget.appInfo,
             connectionStatus: connectionStatus,
             operatorSession: operatorSession),
-        '/operators': (context) => OperatorsPage(
+        '/operators': (context) => operatorsPageBuilder(
             appInfo: widget.appInfo,
             connectionStatus: connectionStatus,
             operatorSession: operatorSession),
-        '/donations_days': (context) => DonationDaysPage(
+        '/donations_days': (context) => donationDaysPageBuilder(
             appInfo: widget.appInfo,
             connectionStatus: connectionStatus,
             operatorSession: operatorSession),

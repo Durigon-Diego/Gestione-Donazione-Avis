@@ -16,6 +16,12 @@ class ConnectionStatus extends ConnectionStatusController {
   final InternetConnection _internetChecker;
   final WebSocketChannel Function(Uri) _connectWebSocket;
 
+  /// True if the object is initialized
+  bool _initialized = false;
+
+  @override
+  bool get initialized => _initialized;
+
   /// True if there is an internet connection
   bool _hasInternet = false;
 
@@ -72,6 +78,9 @@ class ConnectionStatus extends ConnectionStatusController {
     });
 
     _evaluate();
+
+    _initialized = true;
+    logInfo('ConnectionStatus initialized');
   }
 
   void _evaluate() {

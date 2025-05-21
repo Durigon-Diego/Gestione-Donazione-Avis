@@ -23,6 +23,9 @@ class OperatorSession extends OperatorSessionController {
   RealtimeChannel? _channel;
 
   @override
+  bool get initialized => _initialized;
+
+  @override
   String? get currentOperatorID => _currentOperatorID;
 
   @override
@@ -50,13 +53,12 @@ class OperatorSession extends OperatorSessionController {
   @override
   Future<void> init() async {
     _initialized = true;
-    Supabase.instance.client.auth.onAuthStateChange.listen(_handleAuthChange);
-
     if (Supabase.instance.client.auth.currentSession != null) {
       await _loadFromSupabase();
     } else {
       _clear();
     }
+    Supabase.instance.client.auth.onAuthStateChange.listen(_handleAuthChange);
   }
 
   /// Handle Supabase auth state changes

@@ -6,6 +6,7 @@ class AvisColors {
   static const Color blue = Color(0xFF002A5C);
   static const Color red = Color(0xFFE10600);
   static const Color white = Colors.white;
+  static const Color lightGrey = Color.fromARGB(255, 247, 246, 246);
   static const Color grey = Color(0xFFEEEEEE);
   static const Color darkGrey = Color(0xFF555555);
   static const Color warmGrey = Color(0xFF888066);

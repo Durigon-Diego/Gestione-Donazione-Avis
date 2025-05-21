@@ -29,11 +29,12 @@ void main() {
     });
 
     test('initial state is disconnected before init', () {
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
       );
-      expect(controller.state, ServerStatus.disconnected);
+      expect(connectionStatus.state, equals(ServerStatus.disconnected));
+      expect(connectionStatus.initialized, isFalse);
     });
 
     test('init sets initial state based on internet status', () async {
@@ -50,15 +51,18 @@ void main() {
       when(() => sink.add(any())).thenReturn(null);
       when(() => sink.close()).thenAnswer((_) async => null);
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => socket,
       );
 
-      await controller.init();
-      expect(controller.state, ServerStatus.supabaseOffline);
-      controller.dispose();
+      expect(connectionStatus.initialized, isFalse);
+
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
+      expect(connectionStatus.state, equals(ServerStatus.supabaseOffline));
+      connectionStatus.dispose();
     });
 
     testWidgets('reacts to internet disconnected and reconnected',
@@ -76,23 +80,24 @@ void main() {
       when(() => sink.add(any())).thenReturn(null);
       when(() => sink.close()).thenAnswer((_) async => null);
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => socket,
       );
 
-      await controller.init();
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
 
       controllerStream.add(InternetStatus.disconnected);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.disconnected);
+      expect(connectionStatus.state, equals(ServerStatus.disconnected));
 
       controllerStream.add(InternetStatus.connected);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, equals(ServerStatus.supabaseOffline));
 
-      controller.dispose();
+      connectionStatus.dispose();
       await controllerStream.close();
     });
 
@@ -110,14 +115,16 @@ void main() {
       when(() => sink.add(any())).thenReturn(null);
       when(() => sink.close()).thenAnswer((_) async => null);
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => socket,
       );
 
-      await controller.init();
-      controller.dispose();
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
+
+      connectionStatus.dispose();
     });
 
     testWidgets('WebSocket events: connected, closed, error', (tester) async {
@@ -130,32 +137,33 @@ void main() {
       when(() => sink.add(any())).thenReturn(null);
       when(() => sink.close()).thenAnswer((_) async => null);
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => socket,
       );
 
-      await controller.init();
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
 
       socketStream.add('some data');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.connected);
+      expect(connectionStatus.state, ServerStatus.connected);
 
       socketStream.addError('socket error');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
 
       socketStream.add('some data');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.connected);
+      expect(connectionStatus.state, ServerStatus.connected);
 
       when(() => socket.closeCode).thenReturn(42);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
 
       await socketStream.close();
-      controller.dispose();
+      connectionStatus.dispose();
     });
 
     testWidgets('full state transition sequence', (tester) async {
@@ -173,49 +181,50 @@ void main() {
       when(() => sink.add(any())).thenReturn(null);
       when(() => sink.close()).thenAnswer((_) async => null);
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => socket,
       );
 
-      await controller.init();
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
 
       internetStream.add(InternetStatus.disconnected);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.disconnected);
+      expect(connectionStatus.state, ServerStatus.disconnected);
 
       internetStream.add(InternetStatus.connected);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
 
       socketStream.add('data');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.connected);
+      expect(connectionStatus.state, ServerStatus.connected);
 
       internetStream.add(InternetStatus.disconnected);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.disconnected);
+      expect(connectionStatus.state, ServerStatus.disconnected);
 
       internetStream.add(InternetStatus.connected);
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
 
       socketStream.add('data');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.connected);
+      expect(connectionStatus.state, ServerStatus.connected);
 
       socketStream.addError('error');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
 
       socketStream.add('data');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.connected);
+      expect(connectionStatus.state, ServerStatus.connected);
 
       await socketStream.close();
       await internetStream.close();
-      controller.dispose();
+      connectionStatus.dispose();
     });
 
     testWidgets('WebSocket connect throws exception', (tester) async {
@@ -226,15 +235,17 @@ void main() {
       when(() => fakeInternet.checkInterval)
           .thenReturn(const Duration(milliseconds: 10));
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => throw Exception('Connection failed'),
       );
 
-      await controller.init();
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
+
       await tester.pump(const Duration(milliseconds: 20));
-      controller.dispose();
+      connectionStatus.dispose();
     });
 
     testWidgets('WebSocket sink.add throws exception', (tester) async {
@@ -256,38 +267,43 @@ void main() {
       });
       when(() => sink.close()).thenAnswer((_) async => null);
 
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
         internetChecker: fakeInternet,
         connectWebSocket: (_) => socket,
       );
 
-      await controller.init();
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
+
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
       expect(checkReceived, true);
 
       checkReceived = false;
       socketStream.add('data');
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.connected);
+      expect(connectionStatus.state, ServerStatus.connected);
       expect(checkReceived, true);
 
       when(() => sink.add(any())).thenThrow(Exception('sink error'));
       await tester.pump(const Duration(milliseconds: 20));
-      expect(controller.state, ServerStatus.supabaseOffline);
+      expect(connectionStatus.state, ServerStatus.supabaseOffline);
 
-      controller.dispose();
+      connectionStatus.dispose();
     });
 
     test('default internetChecker initialization', () async {
-      final controller = ConnectionStatus(
+      final connectionStatus = ConnectionStatus(
         appInfo: FakeAppInfo(),
       );
 
-      expect(controller, isNotNull);
-      await controller.init();
-      controller.dispose();
+      expect(connectionStatus, isNotNull);
+
+      await connectionStatus.init();
+      expect(connectionStatus.initialized, isTrue);
+
+      connectionStatus.dispose();
     });
   });
 }

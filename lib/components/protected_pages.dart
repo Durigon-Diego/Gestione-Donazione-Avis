@@ -37,17 +37,23 @@ class _ProtectedPageState extends State<ProtectedPage> {
   @override
   void initState() {
     super.initState();
+    widget.connectionStatus.addListener(_checkRedirect);
     widget.operatorSession.addListener(_checkRedirect);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkRedirect());
   }
 
   @override
   void dispose() {
+    widget.connectionStatus.removeListener(_checkRedirect);
     widget.operatorSession.removeListener(_checkRedirect);
     super.dispose();
   }
 
   void _checkRedirect() {
+    if (widget.connectionStatus.state != ServerStatus.connected ||
+        widget.operatorSession.initialized == false) {
+      return;
+    }
     final nav =
         context.mounted ? Navigator.of(context) : navigatorKey.currentState;
     final newValue = widget.checkAccess(context, nav);

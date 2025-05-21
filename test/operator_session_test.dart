@@ -41,6 +41,20 @@ void main() {
       final controller = FakeOperatorSession();
       expect(controller.isConnected, isFalse);
     });
+
+    test('name composed as "first_name last_name" if nickname is null', () {
+      final controller =
+          FakeOperatorSession(firstName: 'John', lastName: 'Doe');
+      expect(controller.name, 'John Doe');
+    });
+
+    test(
+        'name composed as "first_name last_name (nickname)" if nickname is not null',
+        () {
+      final controller = FakeOperatorSession(
+          firstName: 'John', lastName: 'Doe', nickname: 'JD');
+      expect(controller.name, 'John Doe (JD)');
+    });
   });
 
   group('OperatorSession full lifecycle', () {
@@ -51,7 +65,7 @@ void main() {
     late MockUser mockUser;
     late MockRealtimeChannel mockChannel;
 
-    late OperatorSession session;
+    late OperatorSession operatorSession;
 
     bool notified = false;
     void Function(PostgresChangePayload)? onChangeCallback;
@@ -84,11 +98,11 @@ void main() {
       when(() => mockChannel.subscribe()).thenReturn(mockChannel);
       when(() => mockSession.user).thenReturn(mockUser);
 
-      session = OperatorSession();
-      session.addListener(notifiedCallback);
+      operatorSession = OperatorSession();
+      operatorSession.addListener(notifiedCallback);
     });
 
-    tearDownAll(() => session.removeListener(notifiedCallback));
+    tearDownAll(() => operatorSession.removeListener(notifiedCallback));
 
     setUp(() => notified = false);
     tearDown(() => notified = false);
@@ -139,33 +153,37 @@ void main() {
     }
 
     testWidgets('Init without user logged', (tester) async {
-      session.init();
+      expect(operatorSession.initialized, isFalse);
+
+      operatorSession.init();
 
       expect(notified, isTrue);
-      expect(session.currentOperatorID, isNull);
-      expect(session.firstName, isNull);
-      expect(session.lastName, isNull);
-      expect(session.nickname, isNull);
-      expect(session.name, isNull);
-      expect(session.isAdmin, isFalse);
-      expect(session.isActive, isFalse);
-      expect(session.isConnected, isFalse);
+      expect(operatorSession.initialized, isTrue);
+      expect(operatorSession.currentOperatorID, isNull);
+      expect(operatorSession.firstName, isNull);
+      expect(operatorSession.lastName, isNull);
+      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.name, isNull);
+      expect(operatorSession.isAdmin, isFalse);
+      expect(operatorSession.isActive, isFalse);
+      expect(operatorSession.isConnected, isFalse);
     });
 
     testWidgets('OperatorSession reacts to all auth cases and realtime updates',
         (tester) async {
       mockRPC();
 
-      await session.init();
+      await operatorSession.init();
       expect(notified, isTrue);
-      expect(session.currentOperatorID, 'operatorID');
-      expect(session.firstName, 'Test');
-      expect(session.lastName, 'User');
-      expect(session.nickname, isNull);
-      expect(session.name, 'Test User');
-      expect(session.isAdmin, isFalse);
-      expect(session.isActive, isFalse);
-      expect(session.isConnected, isTrue);
+      expect(operatorSession.initialized, isTrue);
+      expect(operatorSession.currentOperatorID, 'operatorID');
+      expect(operatorSession.firstName, 'Test');
+      expect(operatorSession.lastName, 'User');
+      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.name, 'Test User');
+      expect(operatorSession.isAdmin, isFalse);
+      expect(operatorSession.isActive, isFalse);
+      expect(operatorSession.isConnected, isTrue);
 
       notified = false;
       authStreamController
@@ -173,14 +191,14 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(session.currentOperatorID, isNull);
-      expect(session.firstName, isNull);
-      expect(session.lastName, isNull);
-      expect(session.nickname, isNull);
-      expect(session.name, isNull);
-      expect(session.isAdmin, isFalse);
-      expect(session.isActive, isFalse);
-      expect(session.isConnected, isFalse);
+      expect(operatorSession.currentOperatorID, isNull);
+      expect(operatorSession.firstName, isNull);
+      expect(operatorSession.lastName, isNull);
+      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.name, isNull);
+      expect(operatorSession.isAdmin, isFalse);
+      expect(operatorSession.isActive, isFalse);
+      expect(operatorSession.isConnected, isFalse);
 
       notified = false;
       mockRPC(
@@ -197,14 +215,14 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(session.currentOperatorID, 'operatorID2');
-      expect(session.firstName, 'Second');
-      expect(session.lastName, 'Collaborator');
-      expect(session.nickname, 'SC');
-      expect(session.name, 'Second Collaborator (SC)');
-      expect(session.isAdmin, isTrue);
-      expect(session.isActive, isTrue);
-      expect(session.isConnected, isTrue);
+      expect(operatorSession.currentOperatorID, 'operatorID2');
+      expect(operatorSession.firstName, 'Second');
+      expect(operatorSession.lastName, 'Collaborator');
+      expect(operatorSession.nickname, 'SC');
+      expect(operatorSession.name, 'Second Collaborator (SC)');
+      expect(operatorSession.isAdmin, isTrue);
+      expect(operatorSession.isActive, isTrue);
+      expect(operatorSession.isConnected, isTrue);
 
       notified = false;
       mockRPC(operatorID: 'other_user', authID: 'other_auth');
@@ -213,44 +231,45 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(session.currentOperatorID, 'other_user');
-      expect(session.firstName, 'Test');
-      expect(session.lastName, 'User');
-      expect(session.nickname, isNull);
-      expect(session.name, 'Test User');
-      expect(session.isAdmin, isFalse);
-      expect(session.isActive, isFalse);
-      expect(session.isConnected, isTrue);
+      expect(operatorSession.currentOperatorID, 'other_user');
+      expect(operatorSession.firstName, 'Test');
+      expect(operatorSession.lastName, 'User');
+      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.name, 'Test User');
+      expect(operatorSession.isAdmin, isFalse);
+      expect(operatorSession.isActive, isFalse);
+      expect(operatorSession.isConnected, isTrue);
 
       notified = false;
       onChangeCallback!.call(PostgresChangePayload(
-          schema: 'public',
-          table: 'operators',
-          commitTimestamp: DateTime.now(),
-          eventType: PostgresChangeEvent.update,
-          newRecord: {
-            'first_name': 'Updated',
-            'last_name': 'User',
-            'nickname': null,
-            'is_admin': true,
-            'active': true,
-          },
-          oldRecord: {
-            'first_name': 'Test',
-            'last_name': 'User',
-            'nickname': null,
-          },
-          errors: null));
+        schema: 'public',
+        table: 'operators',
+        commitTimestamp: DateTime.now(),
+        eventType: PostgresChangeEvent.update,
+        newRecord: {
+          'first_name': 'Updated',
+          'last_name': 'User',
+          'nickname': null,
+          'is_admin': true,
+          'active': true,
+        },
+        oldRecord: {
+          'first_name': 'Test',
+          'last_name': 'User',
+          'nickname': null,
+        },
+        errors: null,
+      ));
 
       expect(notified, isTrue);
-      expect(session.currentOperatorID, 'other_user');
-      expect(session.firstName, 'Updated');
-      expect(session.lastName, 'User');
-      expect(session.nickname, isNull);
-      expect(session.name, 'Updated User');
-      expect(session.isAdmin, isTrue);
-      expect(session.isActive, isTrue);
-      expect(session.isConnected, isTrue);
+      expect(operatorSession.currentOperatorID, 'other_user');
+      expect(operatorSession.firstName, 'Updated');
+      expect(operatorSession.lastName, 'User');
+      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.name, 'Updated User');
+      expect(operatorSession.isAdmin, isTrue);
+      expect(operatorSession.isActive, isTrue);
+      expect(operatorSession.isConnected, isTrue);
 
       // Force RPC failure
       final mockFilterError = MockPostgrestFilterBuilder();
@@ -264,14 +283,14 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(session.currentOperatorID, isNull);
-      expect(session.firstName, isNull);
-      expect(session.lastName, isNull);
-      expect(session.nickname, isNull);
-      expect(session.name, isNull);
-      expect(session.isAdmin, isFalse);
-      expect(session.isActive, isFalse);
-      expect(session.isConnected, isFalse);
+      expect(operatorSession.currentOperatorID, isNull);
+      expect(operatorSession.firstName, isNull);
+      expect(operatorSession.lastName, isNull);
+      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.name, isNull);
+      expect(operatorSession.isAdmin, isFalse);
+      expect(operatorSession.isActive, isFalse);
+      expect(operatorSession.isConnected, isFalse);
     });
 
     testWidgets('logout() calls navigator pushNamedAndRemoveUntil',
@@ -286,7 +305,7 @@ void main() {
         routes: {'/login': (context) => const Text('Login')},
         home: Builder(
           builder: (context) {
-            session.logout(context);
+            operatorSession.logout(context);
             return const Text('Home');
           },
         ),
@@ -317,7 +336,7 @@ void main() {
       navigatorKey.currentState?.pushNamed('/');
       await tester.pumpAndSettle();
 
-      await session.logout();
+      await operatorSession.logout();
       await tester.pumpAndSettle();
 
       expect(find.text('Login'), findsOneWidget);

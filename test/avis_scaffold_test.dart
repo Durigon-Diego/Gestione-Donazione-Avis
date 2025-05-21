@@ -40,6 +40,10 @@ void main() {
       await tester.tap(find.byIcon(Icons.menu));
       await tester.pumpAndSettle();
       expect(find.byType(Drawer), findsOneWidget);
+
+      Navigator.of(tester.element(find.byType(Drawer))).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(Drawer), findsNothing);
     });
 
     testWidgets('renders correctly with bottom navigation bar', (tester) async {

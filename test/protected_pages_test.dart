@@ -15,8 +15,8 @@ void main() {
 
     setUp(() {
       appInfo = FakeAppInfo();
-      connectionStatus = FakeConnectionStatus();
-      operatorSession = FakeOperatorSession();
+      connectionStatus = FakeConnectionStatus(initialized: true);
+      operatorSession = FakeOperatorSession(initialized: true);
     });
 
     testWidgets('shows content when access is granted', (tester) async {

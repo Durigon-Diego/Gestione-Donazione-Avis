@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
@@ -10,7 +9,42 @@ import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
 import 'fake_components/fake_operator_session.dart';
 
-class MockOperatorSession extends OperatorSessionController with Mock {}
+Widget mockPage(String label) => Scaffold(body: Text(label));
+
+void overridePageBuilders() {
+  loginPageBuilder = ({required connectionStatus, required operatorSession}) =>
+      mockPage('LoginPage');
+  notActivePageBuilder = ({
+    required appInfo,
+    required connectionStatus,
+    required operatorSession,
+  }) =>
+      mockPage('NotActivePage');
+  donationPageBuilder = ({
+    required appInfo,
+    required connectionStatus,
+    required operatorSession,
+  }) =>
+      mockPage('DonationPage');
+  accountPageBuilder = ({
+    required appInfo,
+    required connectionStatus,
+    required operatorSession,
+  }) =>
+      mockPage('AccountPage');
+  operatorsPageBuilder = ({
+    required appInfo,
+    required connectionStatus,
+    required operatorSession,
+  }) =>
+      mockPage('OperatorsPage');
+  donationDaysPageBuilder = ({
+    required appInfo,
+    required connectionStatus,
+    required operatorSession,
+  }) =>
+      mockPage('DonationDaysPage');
+}
 
 void main() {
   group('AvisDonationManagementApp', () {
@@ -19,6 +53,7 @@ void main() {
     late FakeOperatorSession fakeOperatorSession;
 
     setUpAll(() async {
+      overridePageBuilders();
       TestWidgetsFlutterBinding.ensureInitialized();
       SharedPreferences.setMockInitialValues({});
     });
@@ -27,6 +62,14 @@ void main() {
       fakeAppInfo = FakeAppInfo();
       fakeConnectionStatus = FakeConnectionStatus();
       fakeOperatorSession = FakeOperatorSession();
+    });
+
+    tearDown(() async {
+      fakeConnectionStatus.dispose();
+      fakeOperatorSession.dispose();
+      try {
+        await Supabase.instance.dispose();
+      } catch (_) {}
     });
 
     testWidgets('shows LoginPage when not connected', (tester) async {
@@ -42,11 +85,11 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text('Accesso Operatore'), findsOneWidget);
 
-      await Supabase.instance.dispose();
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.text('LoginPage'), findsNothing);
     });
 
     testWidgets('shows DonationPage when connected', (tester) async {
@@ -62,10 +105,12 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      expect(find.text('Donazione'), findsOneWidget);
+      expect(find.text('DonationPage'), findsOneWidget);
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.text('DonationPage'), findsNothing);
     });
 
     testWidgets('has correct supported locales', (tester) async {
@@ -85,6 +130,8 @@ void main() {
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.byType(MaterialApp), findsNothing);
     });
 
     testWidgets('has correct title', (tester) async {
@@ -102,6 +149,8 @@ void main() {
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.byType(MaterialApp), findsNothing);
     });
 
     testWidgets('theme is AvisTheme.light', (tester) async {
@@ -120,6 +169,8 @@ void main() {
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.byType(MaterialApp), findsNothing);
     });
 
     testWidgets('routes are correctly registered', (tester) async {
@@ -134,18 +185,21 @@ void main() {
 
       final MaterialApp app = tester.widget(find.byType(MaterialApp));
       expect(
-          app.routes!.keys,
-          containsAll([
-            '/login',
-            '/not_active',
-            '/donation',
-            '/account',
-            '/operators',
-            '/donations_days',
-          ]));
+        app.routes!.keys,
+        containsAll([
+          '/login',
+          '/not_active',
+          '/donation',
+          '/account',
+          '/operators',
+          '/donations_days',
+        ]),
+      );
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.byType(MaterialApp), findsNothing);
     });
 
     testWidgets(
@@ -153,8 +207,13 @@ void main() {
         (tester) async {
       fakeConnectionStatus.setState(ServerStatus.connected);
       fakeOperatorSession.setState(currentOperatorID: 'user123');
+      fakeOperatorSession.initialized = false;
+      fakeOperatorSession.onInit = () {
+        fakeOperatorSession.initialized = true;
+      };
 
       expect(fakeConnectionStatus.numListener, equals(0));
+      expect(fakeOperatorSession.initialized, isFalse);
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -166,32 +225,36 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Donazione'), findsOneWidget);
-      expect(fakeConnectionStatus.numListener, equals(1)); // Only page
+      expect(find.text('DonationPage'), findsOneWidget);
+      expect(fakeConnectionStatus.numListener, equals(0));
+      expect(fakeOperatorSession.initialized, isTrue);
 
       // Dispose
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
 
       expect(fakeConnectionStatus.numListener, equals(0));
+      expect(fakeOperatorSession.numListener, equals(0));
+      expect(find.byType(MaterialApp), findsNothing);
     });
 
     testWidgets('logs error when operatorSession.init throws', (tester) async {
-      final mockOperatorSession = MockOperatorSession();
       fakeConnectionStatus.setState(ServerStatus.connected);
-
-      when(() => mockOperatorSession.init())
-          .thenThrow(Exception('Fake init error'));
-      when(() => mockOperatorSession.isConnected).thenReturn(false);
-      when(() => mockOperatorSession.currentOperatorID).thenReturn(null);
-      when(() => mockOperatorSession.isAdmin).thenReturn(false);
-      when(() => mockOperatorSession.isActive).thenReturn(false);
+      fakeOperatorSession.setState(
+        currentOperatorID: null,
+        isAdmin: false,
+        isActive: false,
+      );
+      fakeOperatorSession.initialized = false;
+      fakeOperatorSession.onInit = () {
+        throw Exception('Fake init error');
+      };
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
           appInfo: fakeAppInfo,
           connectionStatus: fakeConnectionStatus,
-          operatorSession: mockOperatorSession,
+          operatorSession: fakeOperatorSession,
           authOptions: const FlutterAuthClientOptions(autoRefreshToken: false),
         ),
       );
@@ -203,10 +266,18 @@ void main() {
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
+      expect(find.byType(MaterialApp), findsNothing);
     });
 
     testWidgets('removes listener in dispose if not connectedOnce',
         (tester) async {
+      fakeConnectionStatus.setState(ServerStatus.disconnected);
+      fakeOperatorSession.initialized = false;
+      fakeOperatorSession.onInit = () {
+        fakeOperatorSession.initialized = true;
+      };
+
       await tester.pumpWidget(
         AvisDonationManagementApp(
           appInfo: fakeAppInfo,
@@ -218,13 +289,18 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(fakeConnectionStatus.numListener, 2); // 1 App, 1 page
+      expect(fakeConnectionStatus.numListener, 1);
+      expect(fakeOperatorSession.initialized, isFalse);
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
 
       expect(fakeConnectionStatus.numListener, 0);
+      expect(fakeOperatorSession.initialized, isFalse);
+      expect(find.byType(MaterialApp), findsNothing);
     });
+
+    overridePageBuilders();
 
     Future<void> testRoute({
       required WidgetTester tester,
@@ -247,14 +323,43 @@ void main() {
 
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+      expect(find.text(expectedText), findsNothing);
+      expect(find.byType(MaterialApp), findsNothing);
     }
+
+    testWidgets(
+        'removes listener after notification (calls _handleFirstConnection)',
+        (tester) async {
+      bool listenerRemoved = false;
+      fakeConnectionStatus.onRemoveListener = (_, __) {
+        listenerRemoved = true;
+      };
+      fakeConnectionStatus.setState(ServerStatus.disconnected);
+      fakeOperatorSession.setState(currentOperatorID: 'abc');
+
+      await tester.pumpWidget(
+        AvisDonationManagementApp(
+          appInfo: fakeAppInfo,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
+          authOptions: const FlutterAuthClientOptions(autoRefreshToken: false),
+        ),
+      );
+
+      expect(listenerRemoved, isFalse);
+
+      fakeConnectionStatus.setState(ServerStatus.connected);
+      await tester.pumpAndSettle();
+
+      expect(listenerRemoved, isTrue);
+    });
 
     testWidgets('navigates to /login route', (tester) async {
       fakeOperatorSession.setState(currentOperatorID: null);
       await testRoute(
         tester: tester,
         route: '/login',
-        expectedText: 'Accesso Operatore',
+        expectedText: 'LoginPage',
       );
     });
 
@@ -264,7 +369,7 @@ void main() {
       await testRoute(
         tester: tester,
         route: '/not_active',
-        expectedText: 'Contattare un amministratore per abilitare l\'accesso.',
+        expectedText: 'NotActivePage',
       );
     });
 
@@ -273,7 +378,7 @@ void main() {
       await testRoute(
         tester: tester,
         route: '/donation',
-        expectedText: 'Donazione',
+        expectedText: 'DonationPage',
       );
     });
 
@@ -282,7 +387,7 @@ void main() {
       await testRoute(
         tester: tester,
         route: '/account',
-        expectedText: 'Pagina gestione account',
+        expectedText: 'AccountPage',
       );
     });
 
@@ -292,7 +397,7 @@ void main() {
       await testRoute(
         tester: tester,
         route: '/operators',
-        expectedText: 'Pagina gestione operatori',
+        expectedText: 'OperatorsPage',
       );
     });
 
@@ -305,7 +410,7 @@ void main() {
       await testRoute(
         tester: tester,
         route: '/donations_days',
-        expectedText: 'Pagina gestione giornate di donazione',
+        expectedText: 'DonationDaysPage',
       );
     });
   });

@@ -4,6 +4,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 /// Abstract interface for operator session
 abstract class OperatorSessionController extends ChangeNotifier {
+  bool get initialized;
   String? get currentOperatorID;
   String? get firstName;
   String? get lastName;
