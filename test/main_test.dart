@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:avis_donation_management/main.dart' as main_entry;
 import 'package:avis_donation_management/avis_donation_management_app.dart';
-
+import 'package:avis_donation_management/main.dart' as main_entry;
 import 'fake_components/fake_app_info.dart';
 
 void main() {
@@ -53,7 +52,7 @@ void main() {
         captured = widget;
       };
 
-      await main_entry.main(); // <-- Nessun customAppInfo
+      await main_entry.main();
 
       expect(captured, isNotNull);
     });

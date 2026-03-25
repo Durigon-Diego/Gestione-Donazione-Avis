@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/components/avis_theme.dart';
 import 'package:avis_donation_management/pages/login_page.dart';
 import 'fake_components/fake_connection_status_controller.dart';
@@ -67,31 +68,39 @@ void main() {
       settle ? await tester.pumpAndSettle() : await tester.pump();
     }
 
-    Future<void> mockSuccessfulLogin(FakeOperatorSession session,
+    Future<void> mockSuccessfulLogin(FakeOperatorSession fakeOperatorSession,
         {required bool active}) async {
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.signInWithPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
           )).thenAnswer((_) async {
-        session.setState(currentOperatorID: '123', isActive: active);
-        when(() => mockUser.id).thenReturn('123');
+        OperatorData operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: active,
+          firstName: 'Mario',
+          lastName: 'Rossi',
+        );
+        fakeOperatorSession.setState(data: operatorData);
+        when(() => mockUser.id).thenReturn('auth_user_id_M');
         when(() => mockAuth.currentSession).thenReturn(mockSession);
         return AuthResponse(session: mockSession, user: mockUser);
       });
     }
 
     testWidgets('renders login page with Accedi button', (tester) async {
-      final session = FakeOperatorSession();
-      await pumpLoginPage(tester, session);
+      final fakeOperatorSession = FakeOperatorSession();
+      await pumpLoginPage(tester, fakeOperatorSession);
       expect(find.text('Accedi'), findsOneWidget);
     });
 
     testWidgets('successful login redirects to /donation if active',
         (tester) async {
-      final session = FakeOperatorSession();
-      await mockSuccessfulLogin(session, active: true);
-      await pumpLoginPage(tester, session);
+      final fakeOperatorSession = FakeOperatorSession();
+      await mockSuccessfulLogin(fakeOperatorSession, active: true);
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       await tester.enterText(find.byType(TextField).at(0), 'test@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'password');
@@ -103,9 +112,9 @@ void main() {
 
     testWidgets('successful login redirects to /not_active if not active',
         (tester) async {
-      final session = FakeOperatorSession();
-      await mockSuccessfulLogin(session, active: false);
-      await pumpLoginPage(tester, session);
+      final fakeOperatorSession = FakeOperatorSession();
+      await mockSuccessfulLogin(fakeOperatorSession, active: false);
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       await tester.enterText(find.byType(TextField).at(0), 'test@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'password');
@@ -116,14 +125,14 @@ void main() {
     });
 
     testWidgets('login shows credential error (400)', (tester) async {
-      final session = FakeOperatorSession();
+      final fakeOperatorSession = FakeOperatorSession();
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.signInWithPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
           )).thenThrow(const AuthException('Invalid', statusCode: '400'));
 
-      await pumpLoginPage(tester, session);
+      await pumpLoginPage(tester, fakeOperatorSession);
       await tester.enterText(find.byType(TextField).at(0), 'wrong@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'wrongpass');
       await tester.tap(find.text('Accedi'));
@@ -133,7 +142,7 @@ void main() {
     });
 
     testWidgets('login shows too many attempts error (429)', (tester) async {
-      final session = FakeOperatorSession();
+      final fakeOperatorSession = FakeOperatorSession();
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.signInWithPassword(
                 email: any(named: 'email'),
@@ -142,7 +151,7 @@ void main() {
           .thenThrow(
               const AuthException('Too many attempts', statusCode: '429'));
 
-      await pumpLoginPage(tester, session);
+      await pumpLoginPage(tester, fakeOperatorSession);
       await tester.enterText(find.byType(TextField).at(0), 'spam@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'spam');
       await tester.tap(find.text('Accedi'));
@@ -154,14 +163,14 @@ void main() {
 
     testWidgets('login shows generic error for unknown exceptions',
         (tester) async {
-      final session = FakeOperatorSession();
+      final fakeOperatorSession = FakeOperatorSession();
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.signInWithPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
           )).thenThrow(Exception('Unknown error'));
 
-      await pumpLoginPage(tester, session);
+      await pumpLoginPage(tester, fakeOperatorSession);
       await tester.enterText(find.byType(TextField).at(0), 'oops@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'oops');
       await tester.tap(find.text('Accedi'));
@@ -175,32 +184,46 @@ void main() {
 
     testWidgets('loads last saved email on startup', (tester) async {
       SharedPreferences.setMockInitialValues({'last_email': 'saved@email.com'});
-      final session = FakeOperatorSession();
-      await pumpLoginPage(tester, session);
+      final fakeOperatorSession = FakeOperatorSession();
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       expect(find.widgetWithText(TextField, 'saved@email.com'), findsOneWidget);
     });
 
     testWidgets('user already connected redirects to donation if active',
         (tester) async {
-      final session = FakeOperatorSession();
-      session.setState(currentOperatorID: 'abc', isActive: true);
-      await pumpLoginPage(tester, session);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       expect(find.text('Donazione'), findsOneWidget);
     });
 
     testWidgets('user already connected redirects to not_active if not active',
         (tester) async {
-      final session = FakeOperatorSession();
-      session.setState(currentOperatorID: 'abc', isActive: false);
-      await pumpLoginPage(tester, session);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: false,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       expect(find.text('Non Attivo'), findsOneWidget);
     });
 
     testWidgets('login fails if user id is null after auth', (tester) async {
-      final session = FakeOperatorSession();
+      final fakeOperatorSession = FakeOperatorSession();
 
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.signInWithPassword(
@@ -208,7 +231,7 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => AuthResponse(session: null, user: null));
 
-      await pumpLoginPage(tester, session);
+      await pumpLoginPage(tester, fakeOperatorSession);
       await tester.enterText(find.byType(TextField).at(0), 'null@example.com');
       await tester.enterText(find.byType(TextField).at(1), 'password');
       await tester.tap(find.text('Accedi'));
@@ -218,9 +241,9 @@ void main() {
     });
 
     testWidgets('login by pressing enter on email field', (tester) async {
-      final session = FakeOperatorSession();
-      await mockSuccessfulLogin(session, active: true);
-      await pumpLoginPage(tester, session);
+      final fakeOperatorSession = FakeOperatorSession();
+      await mockSuccessfulLogin(fakeOperatorSession, active: true);
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       await tester.enterText(find.byType(TextField).at(0), 'email@example.com');
       await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -230,9 +253,9 @@ void main() {
     });
 
     testWidgets('login by pressing enter on password field', (tester) async {
-      final session = FakeOperatorSession();
-      await mockSuccessfulLogin(session, active: true);
-      await pumpLoginPage(tester, session);
+      final fakeOperatorSession = FakeOperatorSession();
+      await mockSuccessfulLogin(fakeOperatorSession, active: true);
+      await pumpLoginPage(tester, fakeOperatorSession);
 
       await tester.enterText(find.byType(TextField).at(1), 'password123');
       await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -243,10 +266,10 @@ void main() {
 
     testWidgets('all elements change enabled state with connection status',
         (tester) async {
-      final session = FakeOperatorSession();
+      final fakeOperatorSession = FakeOperatorSession();
       fakeConnectionStatus.setState(ServerStatus.disconnected);
 
-      await pumpLoginPage(tester, session, settle: false);
+      await pumpLoginPage(tester, fakeOperatorSession, settle: false);
 
       Future<void> verifyState({
         required bool enabled,

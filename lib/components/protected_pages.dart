@@ -106,6 +106,19 @@ mixin ActiveCheck on ProtectedPage {
   }
 }
 
+/// Mixin to check if the user is an inactive operator
+mixin NotActiveCheck on ProtectedPage {
+  @override
+  bool checkAccess(BuildContext context, NavigatorState? nav) {
+    if (operatorSession.isActive) {
+      logWarning("User '${operatorSession.name}' is active");
+      nav?.pushNamedAndRemoveUntil('/donation', (_) => false);
+      return false;
+    }
+    return super.checkAccess(context, nav);
+  }
+}
+
 /// Mixin to check if the user is an admin
 mixin AdminCheck on ProtectedPage {
   @override

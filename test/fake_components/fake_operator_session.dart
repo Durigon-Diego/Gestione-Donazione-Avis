@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 
 /// Fake implementation of OperatorSessionController for tests
 class FakeOperatorSession extends OperatorSessionController {
@@ -8,22 +9,7 @@ class FakeOperatorSession extends OperatorSessionController {
   bool initialized;
 
   @override
-  String? currentOperatorID;
-
-  @override
-  String? firstName;
-
-  @override
-  String? lastName;
-
-  @override
-  String? nickname;
-
-  @override
-  bool isAdmin;
-
-  @override
-  bool isActive;
+  OperatorData? data;
 
   int _numListener = 0;
   int get numListener => _numListener;
@@ -42,12 +28,7 @@ class FakeOperatorSession extends OperatorSessionController {
 
   FakeOperatorSession({
     this.initialized = false,
-    this.currentOperatorID,
-    this.firstName,
-    this.lastName,
-    this.nickname,
-    this.isAdmin = false,
-    this.isActive = true,
+    this.data,
     this.onInit = _defaultOnInit,
     this.onLogout = _defaultOnLogout,
     this.onAddListener = _defaultOnAddListener,
@@ -56,20 +37,10 @@ class FakeOperatorSession extends OperatorSessionController {
 
   void setState({
     bool? initialized,
-    String? currentOperatorID,
-    String? firstName,
-    String? lastName,
-    String? nickname,
-    bool isAdmin = false,
-    bool isActive = true,
+    OperatorData? data,
   }) {
     this.initialized = initialized ?? this.initialized;
-    this.currentOperatorID = currentOperatorID;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.nickname = nickname;
-    this.isAdmin = isAdmin;
-    this.isActive = isActive;
+    this.data = data;
     notifyListeners();
   }
 

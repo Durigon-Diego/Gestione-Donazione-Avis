@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
 import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/avis_donation_management_app.dart';
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
@@ -73,7 +74,7 @@ void main() {
     });
 
     testWidgets('shows LoginPage when not connected', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: null);
+      fakeOperatorSession.setState(data: null);
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -93,7 +94,16 @@ void main() {
     });
 
     testWidgets('shows DonationPage when connected', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: 'test_user');
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -114,7 +124,16 @@ void main() {
     });
 
     testWidgets('has correct supported locales', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: 'test_user');
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -206,8 +225,17 @@ void main() {
         'connected flow initializes properly and does not remove listener after dispose',
         (tester) async {
       fakeConnectionStatus.setState(ServerStatus.connected);
-      fakeOperatorSession.setState(currentOperatorID: 'user123');
-      fakeOperatorSession.initialized = false;
+
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData, initialized: false);
       fakeOperatorSession.onInit = () {
         fakeOperatorSession.initialized = true;
       };
@@ -240,12 +268,17 @@ void main() {
 
     testWidgets('logs error when operatorSession.init throws', (tester) async {
       fakeConnectionStatus.setState(ServerStatus.connected);
-      fakeOperatorSession.setState(
-        currentOperatorID: null,
+
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
         isAdmin: false,
         isActive: false,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
       );
-      fakeOperatorSession.initialized = false;
+      fakeOperatorSession.setState(data: operatorData, initialized: false);
       fakeOperatorSession.onInit = () {
         throw Exception('Fake init error');
       };
@@ -335,7 +368,17 @@ void main() {
         listenerRemoved = true;
       };
       fakeConnectionStatus.setState(ServerStatus.disconnected);
-      fakeOperatorSession.setState(currentOperatorID: 'abc');
+
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(
         AvisDonationManagementApp(
@@ -355,7 +398,7 @@ void main() {
     });
 
     testWidgets('navigates to /login route', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: null);
+      fakeOperatorSession.setState(data: null);
       await testRoute(
         tester: tester,
         route: '/login',
@@ -364,8 +407,16 @@ void main() {
     });
 
     testWidgets('navigates to /not_active route', (tester) async {
-      fakeOperatorSession.setState(
-          currentOperatorID: 'x', isActive: false, isAdmin: false);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: false,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testRoute(
         tester: tester,
         route: '/not_active',
@@ -374,7 +425,16 @@ void main() {
     });
 
     testWidgets('navigates to /donation route', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: 'x', isActive: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testRoute(
         tester: tester,
         route: '/donation',
@@ -383,7 +443,16 @@ void main() {
     });
 
     testWidgets('navigates to /account route', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: 'x', isActive: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testRoute(
         tester: tester,
         route: '/account',
@@ -392,8 +461,16 @@ void main() {
     });
 
     testWidgets('navigates to /operators route', (tester) async {
-      fakeOperatorSession.setState(
-          currentOperatorID: 'x', isActive: true, isAdmin: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: true,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testRoute(
         tester: tester,
         route: '/operators',
@@ -402,11 +479,16 @@ void main() {
     });
 
     testWidgets('navigates to /donations_days route', (tester) async {
-      fakeOperatorSession.setState(
-        currentOperatorID: 'x',
-        isActive: true,
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
         isAdmin: true,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
       );
+      fakeOperatorSession.setState(data: operatorData);
       await testRoute(
         tester: tester,
         route: '/donations_days',

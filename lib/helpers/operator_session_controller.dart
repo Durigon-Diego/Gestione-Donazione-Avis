@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 /// Abstract interface for operator session
 abstract class OperatorSessionController extends ChangeNotifier {
   bool get initialized;
-  String? get currentOperatorID;
-  String? get firstName;
-  String? get lastName;
-  String? get nickname;
-  bool get isAdmin;
-  bool get isActive;
 
-  bool get isConnected => currentOperatorID != null;
+  OperatorData? get data;
 
-  String? get name {
-    if (firstName == null || lastName == null) return null;
-    return nickname?.isNotEmpty == true
-        ? '$firstName $lastName ($nickname)'
-        : '$firstName $lastName';
-  }
+  bool get isConnected => data != null;
+  bool get isAdmin => data?.isAdmin ?? false;
+  bool get isActive => data?.isActive ?? false;
+
+  String? get name => data?.name;
 
   Future<void> init();
   Future<void> logout([BuildContext? context]);

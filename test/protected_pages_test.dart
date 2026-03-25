@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/components/protected_pages.dart';
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
@@ -10,21 +11,21 @@ import 'fake_components/fake_operator_session.dart';
 void main() {
   group('ProtectedPages Access Control', () {
     late FakeAppInfo appInfo;
-    late FakeConnectionStatus connectionStatus;
-    late FakeOperatorSession operatorSession;
+    late FakeConnectionStatus fakeConnectionStatus;
+    late FakeOperatorSession fakeOperatorSession;
 
     setUp(() {
       appInfo = FakeAppInfo();
-      connectionStatus = FakeConnectionStatus(initialized: true);
-      operatorSession = FakeOperatorSession(initialized: true);
+      fakeConnectionStatus = FakeConnectionStatus(initialized: true);
+      fakeOperatorSession = FakeOperatorSession(initialized: true);
     });
 
     testWidgets('shows content when access is granted', (tester) async {
       await tester.pumpWidget(MaterialApp(
         home: _TestPage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -36,8 +37,8 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         home: _TestPage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
           overrideAccess: false,
         ),
       ));
@@ -47,7 +48,7 @@ void main() {
     });
 
     testWidgets('LoggedCheck redirects when not connected', (tester) async {
-      operatorSession.setState(currentOperatorID: null);
+      fakeOperatorSession.setState(data: null);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -55,8 +56,8 @@ void main() {
         },
         home: _LoggedPage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -65,7 +66,15 @@ void main() {
     });
 
     testWidgets('ActiveCheck redirects when not active', (tester) async {
-      operatorSession.setState(currentOperatorID: 'x', isActive: false);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: false,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -73,8 +82,8 @@ void main() {
         },
         home: _ActivePage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -82,9 +91,42 @@ void main() {
       expect(find.text('NOT_ACTIVE'), findsOneWidget);
     });
 
+    testWidgets('NotActiveCheck redirects when active', (tester) async {
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
+
+      await tester.pumpWidget(MaterialApp(
+        routes: {
+          '/donation': (context) => const Text('DONATION'),
+        },
+        home: _NotActivePage(
+          appInfo: appInfo,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
+        ),
+      ));
+
+      await tester.pumpAndSettle();
+      expect(find.text('DONATION'), findsOneWidget);
+    });
+
     testWidgets('AdminCheck redirects when not admin', (tester) async {
-      operatorSession.setState(
-          currentOperatorID: 'x', isActive: true, isAdmin: false);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -92,8 +134,8 @@ void main() {
         },
         home: _AdminPage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -103,13 +145,45 @@ void main() {
 
     testWidgets('ActiveCheck defers to super when user is active',
         (tester) async {
-      operatorSession.setState(currentOperatorID: 'x', isActive: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         home: _ActivePage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
+        ),
+      ));
+
+      await tester.pumpAndSettle();
+      expect(find.text('SHOULD NOT SEE'), findsOneWidget);
+    });
+
+    testWidgets('NotActiveCheck defers to super when user is not active',
+        (tester) async {
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: false,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
+
+      await tester.pumpWidget(MaterialApp(
+        home: _NotActivePage(
+          appInfo: appInfo,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -119,14 +193,21 @@ void main() {
 
     testWidgets('AdminCheck defers to super when user is admin',
         (tester) async {
-      operatorSession.setState(
-          currentOperatorID: 'x', isActive: true, isAdmin: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: true,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         home: _AdminPage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -136,13 +217,21 @@ void main() {
 
     testWidgets('ProtectedAvisScaffoldedPage renders correctly',
         (tester) async {
-      operatorSession.setState(currentOperatorID: 'x');
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         home: _ScaffoldedPage(
           appInfo: appInfo,
-          connectionStatus: connectionStatus,
-          operatorSession: operatorSession,
+          connectionStatus: fakeConnectionStatus,
+          operatorSession: fakeOperatorSession,
         ),
       ));
 
@@ -187,6 +276,19 @@ class _LoggedPage extends ProtectedPage with LoggedCheck {
 
 class _ActivePage extends ProtectedPage with LoggedCheck, ActiveCheck {
   const _ActivePage({
+    required super.appInfo,
+    required super.connectionStatus,
+    required super.operatorSession,
+  });
+
+  @override
+  Widget buildContent(BuildContext context) {
+    return const Text('SHOULD NOT SEE');
+  }
+}
+
+class _NotActivePage extends ProtectedPage with LoggedCheck, NotActiveCheck {
+  const _NotActivePage({
     required super.appInfo,
     required super.connectionStatus,
     required super.operatorSession,

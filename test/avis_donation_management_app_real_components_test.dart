@@ -5,11 +5,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
 import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
+import 'package:avis_donation_management/pages/login_page.dart';
+import 'package:avis_donation_management/pages/not_active_page.dart';
 import 'package:avis_donation_management/pages/account_page.dart';
 import 'package:avis_donation_management/pages/donation_days_page.dart';
 import 'package:avis_donation_management/pages/donation_page.dart';
-import 'package:avis_donation_management/pages/login_page.dart';
-import 'package:avis_donation_management/pages/not_active_page.dart';
 import 'package:avis_donation_management/pages/operators_page.dart';
 import 'package:avis_donation_management/avis_donation_management_app.dart';
 import 'fake_components/fake_app_info.dart';
@@ -84,39 +85,82 @@ void main() {
     }
 
     testWidgets('default loginPageBuilder', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: null);
+      fakeOperatorSession.setState(data: null);
       await testDefaultPage(
           tester: tester, route: '/login', expectedWidget: LoginPage);
     });
 
     testWidgets('default notActivePageBuilder', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: '1', isActive: false);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: false,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testDefaultPage(
           tester: tester, route: '/not_active', expectedWidget: NotActivePage);
     });
 
     testWidgets('default donationPageBuilder', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: '1', isActive: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testDefaultPage(
           tester: tester, route: '/donation', expectedWidget: DonationPage);
     });
 
     testWidgets('default accountPageBuilder', (tester) async {
-      fakeOperatorSession.setState(currentOperatorID: '1', isActive: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testDefaultPage(
           tester: tester, route: '/account', expectedWidget: AccountPage);
     });
 
     testWidgets('default operatorsPageBuilder', (tester) async {
-      fakeOperatorSession.setState(
-          currentOperatorID: '1', isActive: true, isAdmin: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: true,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testDefaultPage(
           tester: tester, route: '/operators', expectedWidget: OperatorsPage);
     });
 
     testWidgets('default donationDaysPageBuilder', (tester) async {
-      fakeOperatorSession.setState(
-          currentOperatorID: '1', isActive: true, isAdmin: true);
+      OperatorData operatorData = OperatorData(
+        id: 'ID_1',
+        authUserId: 'auth_user_id_1',
+        isAdmin: true,
+        isActive: true,
+        firstName: 'First',
+        lastName: 'Prime',
+        nickname: 'One',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await testDefaultPage(
           tester: tester,
           route: '/donations_days',

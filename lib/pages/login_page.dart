@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
 
       _sessionListener = () {
         // Ignore if the current active user is still the previous one
-        if (widget.operatorSession.currentOperatorID != null) {
+        if (widget.operatorSession.data != null) {
           completer.complete();
         }
       };
@@ -129,6 +129,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       setState(() {
+        _loading = false;
         if (error is LoginException) {
           _errorMessage = error.message;
         } else if (error is AuthException && error.statusCode == '400') {

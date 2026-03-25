@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/helpers/operator_session_controller.dart';
 import 'package:avis_donation_management/helpers/operator_session.dart';
 import 'fake_components/fake_operator_session.dart';
@@ -33,7 +34,16 @@ class FakeRoute extends Fake implements Route<dynamic> {}
 void main() {
   group('OperatorSessionController', () {
     test('isConnected returns true if currentOperatorID is not null', () {
-      final controller = FakeOperatorSession(currentOperatorID: '123');
+      final controller = FakeOperatorSession(
+        data: OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: true,
+          firstName: 'Mario',
+          lastName: 'Rossi',
+        ),
+      );
       expect(controller.isConnected, isTrue);
     });
 
@@ -43,17 +53,34 @@ void main() {
     });
 
     test('name composed as "first_name last_name" if nickname is null', () {
-      final controller =
-          FakeOperatorSession(firstName: 'John', lastName: 'Doe');
-      expect(controller.name, 'John Doe');
+      final controller = FakeOperatorSession(
+        data: OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: true,
+          firstName: 'Mario',
+          lastName: 'Rossi',
+        ),
+      );
+      expect(controller.name, 'Mario Rossi');
     });
 
     test(
         'name composed as "first_name last_name (nickname)" if nickname is not null',
         () {
       final controller = FakeOperatorSession(
-          firstName: 'John', lastName: 'Doe', nickname: 'JD');
-      expect(controller.name, 'John Doe (JD)');
+        data: OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: true,
+          firstName: 'Mario',
+          lastName: 'Rossi',
+          nickname: 'SuperMario',
+        ),
+      );
+      expect(controller.name, 'Mario Rossi (SuperMario)');
     });
   });
 
@@ -115,6 +142,8 @@ void main() {
       String? nickname,
       bool isAdmin = false,
       bool active = false,
+      String? createdAt,
+      String? updatedAt,
     }) {
       final mockFilter = MockPostgrestFilterBuilder();
       final mockTransform = MockPostgrestTransformBuilder();
@@ -128,11 +157,14 @@ void main() {
             Map<String, dynamic>);
         return Future.value(cb({
           'id': operatorID,
+          'auth_user_id': authID,
           'first_name': firstName,
           'last_name': lastName,
           'nickname': nickname,
           'is_admin': isAdmin,
           'active': active,
+          'created_at': createdAt ?? DateTime.now().toIso8601String(),
+          'updated_at': updatedAt ?? DateTime.now().toIso8601String(),
         }));
       });
 
@@ -159,10 +191,7 @@ void main() {
 
       expect(notified, isTrue);
       expect(operatorSession.initialized, isTrue);
-      expect(operatorSession.currentOperatorID, isNull);
-      expect(operatorSession.firstName, isNull);
-      expect(operatorSession.lastName, isNull);
-      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.data, isNull);
       expect(operatorSession.name, isNull);
       expect(operatorSession.isAdmin, isFalse);
       expect(operatorSession.isActive, isFalse);
@@ -176,10 +205,12 @@ void main() {
       await operatorSession.init();
       expect(notified, isTrue);
       expect(operatorSession.initialized, isTrue);
-      expect(operatorSession.currentOperatorID, 'operatorID');
-      expect(operatorSession.firstName, 'Test');
-      expect(operatorSession.lastName, 'User');
-      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.data, isNotNull);
+      expect(operatorSession.data!.id, 'operatorID');
+      expect(operatorSession.data!.authUserId, 'uid');
+      expect(operatorSession.data!.firstName, 'Test');
+      expect(operatorSession.data!.lastName, 'User');
+      expect(operatorSession.data!.nickname, isNull);
       expect(operatorSession.name, 'Test User');
       expect(operatorSession.isAdmin, isFalse);
       expect(operatorSession.isActive, isFalse);
@@ -191,10 +222,7 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(operatorSession.currentOperatorID, isNull);
-      expect(operatorSession.firstName, isNull);
-      expect(operatorSession.lastName, isNull);
-      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.data, isNull);
       expect(operatorSession.name, isNull);
       expect(operatorSession.isAdmin, isFalse);
       expect(operatorSession.isActive, isFalse);
@@ -215,10 +243,12 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(operatorSession.currentOperatorID, 'operatorID2');
-      expect(operatorSession.firstName, 'Second');
-      expect(operatorSession.lastName, 'Collaborator');
-      expect(operatorSession.nickname, 'SC');
+      expect(operatorSession.data, isNotNull);
+      expect(operatorSession.data!.id, 'operatorID2');
+      expect(operatorSession.data!.authUserId, 'uid2');
+      expect(operatorSession.data!.firstName, 'Second');
+      expect(operatorSession.data!.lastName, 'Collaborator');
+      expect(operatorSession.data!.nickname, 'SC');
       expect(operatorSession.name, 'Second Collaborator (SC)');
       expect(operatorSession.isAdmin, isTrue);
       expect(operatorSession.isActive, isTrue);
@@ -231,10 +261,12 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(operatorSession.currentOperatorID, 'other_user');
-      expect(operatorSession.firstName, 'Test');
-      expect(operatorSession.lastName, 'User');
-      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.data, isNotNull);
+      expect(operatorSession.data!.id, 'other_user');
+      expect(operatorSession.data!.authUserId, 'other_auth');
+      expect(operatorSession.data!.firstName, 'Test');
+      expect(operatorSession.data!.lastName, 'User');
+      expect(operatorSession.data!.nickname, isNull);
       expect(operatorSession.name, 'Test User');
       expect(operatorSession.isAdmin, isFalse);
       expect(operatorSession.isActive, isFalse);
@@ -247,11 +279,15 @@ void main() {
         commitTimestamp: DateTime.now(),
         eventType: PostgresChangeEvent.update,
         newRecord: {
+          'id': 'other_user',
+          'auth_user_id': 'other_auth',
           'first_name': 'Updated',
           'last_name': 'User',
           'nickname': null,
           'is_admin': true,
           'active': true,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
         oldRecord: {
           'first_name': 'Test',
@@ -262,10 +298,12 @@ void main() {
       ));
 
       expect(notified, isTrue);
-      expect(operatorSession.currentOperatorID, 'other_user');
-      expect(operatorSession.firstName, 'Updated');
-      expect(operatorSession.lastName, 'User');
-      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.data, isNotNull);
+      expect(operatorSession.data!.id, 'other_user');
+      expect(operatorSession.data!.authUserId, 'other_auth');
+      expect(operatorSession.data!.firstName, 'Updated');
+      expect(operatorSession.data!.lastName, 'User');
+      expect(operatorSession.data!.nickname, isNull);
       expect(operatorSession.name, 'Updated User');
       expect(operatorSession.isAdmin, isTrue);
       expect(operatorSession.isActive, isTrue);
@@ -283,10 +321,7 @@ void main() {
       await tester.pump();
 
       expect(notified, isTrue);
-      expect(operatorSession.currentOperatorID, isNull);
-      expect(operatorSession.firstName, isNull);
-      expect(operatorSession.lastName, isNull);
-      expect(operatorSession.nickname, isNull);
+      expect(operatorSession.data, isNull);
       expect(operatorSession.name, isNull);
       expect(operatorSession.isAdmin, isFalse);
       expect(operatorSession.isActive, isFalse);

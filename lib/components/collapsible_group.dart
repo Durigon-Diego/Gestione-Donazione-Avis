@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:avis_donation_management/components/avis_theme.dart';
 
-class CollapsibleGroup extends StatefulWidget {
+class CollapsibleGroup<T> extends StatefulWidget {
   final String title;
-  final List<Map<String, dynamic>> operators;
-  final void Function(Map<String, dynamic>) onTap;
+  final List<T> data;
+  final Widget Function(T) elementBuilder;
   final bool visible;
   final bool initialExpanded;
 
   const CollapsibleGroup({
     super.key,
     required this.title,
-    required this.operators,
-    required this.onTap,
+    required this.data,
+    required this.elementBuilder,
     this.visible = true,
     this.initialExpanded = true,
   });
 
   @override
-  State<CollapsibleGroup> createState() => _CollapsibleGroupState();
+  State<CollapsibleGroup<T>> createState() => _CollapsibleGroupState<T>();
 }
 
-class _CollapsibleGroupState extends State<CollapsibleGroup> {
+class _CollapsibleGroupState<T> extends State<CollapsibleGroup<T>> {
   bool _expanded = true;
 
   @override
@@ -58,47 +58,7 @@ class _CollapsibleGroupState extends State<CollapsibleGroup> {
             ),
             onTap: () => setState(() => _expanded = !_expanded),
           ),
-          if (_expanded)
-            ...widget.operators.map(
-              (op) {
-                final name = '${op['first_name']} ${op['last_name']}'
-                    '${op['nickname']?.toString().isNotEmpty == true ? ' (${op['nickname']})' : ''}';
-                final isAdmin = op['is_admin'] == true;
-                final isActive = op['active'] == true;
-                final isDeleted = op['auth_user_id'] == null;
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12.0, vertical: 6.0),
-                  child: ListTile(
-                    title: Text(
-                      name,
-                      style: isDeleted
-                          ? const TextStyle(
-                              decoration: TextDecoration.lineThrough,
-                              color: AvisColors.darkGrey,
-                            )
-                          : null,
-                    ),
-                    leading: Icon(
-                      isDeleted
-                          ? isAdmin
-                              ? Icons.shield_outlined
-                              : Icons.person_outlined
-                          : isAdmin
-                              ? Icons.shield
-                              : Icons.person,
-                      color: isActive ? AvisColors.blue : AvisColors.red,
-                    ),
-                    tileColor: AvisColors.lightGrey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    onTap: () => widget.onTap(op),
-                  ),
-                );
-              },
-            ),
+          if (_expanded) ...widget.data.map(widget.elementBuilder),
         ],
       ),
     );

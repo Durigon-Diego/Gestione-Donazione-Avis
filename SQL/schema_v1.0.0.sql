@@ -71,15 +71,15 @@ CREATE TABLE public.donors (
     scheduled_time_slot text NOT NULL,
     folder_number integer,
     current_status text DEFAULT 'scheduled'::text,
-    operator_checkin_id uuid REFERENCES public.operators (id),
+    operator_checkin_id uuid REFERENCES public.operators (id) ON DELETE SET NULL,
     checkin_timestamp timestamp without time zone,
-    operator_screening_id uuid REFERENCES public.operators (id),
+    operator_screening_id uuid REFERENCES public.operators (id) ON DELETE SET NULL,
     screening_timestamp timestamp without time zone,
     screening_result text,
-    operator_exam_id uuid REFERENCES public.operators (id),
+    operator_exam_id uuid REFERENCES public.operators (id) ON DELETE SET NULL,
     exam_timestamp timestamp without time zone,
     exam_result text,
-    operator_donation_id uuid REFERENCES public.operators (id),
+    operator_donation_id uuid REFERENCES public.operators (id) ON DELETE SET NULL,
     donation_timestamp timestamp without time zone,
 
     CONSTRAINT donors_current_status_check CHECK (
@@ -114,6 +114,7 @@ RETURNS TABLE (
     notes text
 )
 LANGUAGE sql
+SET search_path = ''
 AS $$
     SELECT
         version,
@@ -133,6 +134,7 @@ DROP FUNCTION IF EXISTS public.is_valid_user;
 -- Name: is_valid_user(); Type: FUNCTION; Schema: public; Owner: -
 CREATE FUNCTION public.is_valid_user() RETURNS boolean
 LANGUAGE sql STABLE
+SET search_path = ''
 AS $$
     SELECT
         EXISTS (
@@ -141,8 +143,8 @@ AS $$
             FROM
                 public.operators
             WHERE
-                auth_user_id = auth.uid()
-                AND auth_user_id IS NOT NULL
+                auth_user_id IS NOT NULL
+                AND auth_user_id = (SELECT auth.uid())
         );
 $$;
 
@@ -152,6 +154,7 @@ DROP FUNCTION IF EXISTS public.is_active_user;
 -- Name: is_active_user(); Type: FUNCTION; Schema: public; Owner: -
 CREATE FUNCTION public.is_active_user() RETURNS boolean
 LANGUAGE sql STABLE
+SET search_path = ''
 AS $$
     SELECT
         EXISTS (
@@ -160,8 +163,8 @@ AS $$
             FROM
                 public.operators
             WHERE
-                auth_user_id = auth.uid()
-                AND auth_user_id IS NOT NULL
+                auth_user_id IS NOT NULL
+                AND auth_user_id = (SELECT auth.uid())
                 AND active = TRUE
         );
 $$;
@@ -172,6 +175,7 @@ DROP FUNCTION IF EXISTS public.is_admin_user;
 -- Name: is_admin_user(); Type: FUNCTION; Schema: public; Owner: -
 CREATE FUNCTION public.is_admin_user() RETURNS boolean
 LANGUAGE sql STABLE
+SET search_path = ''
 AS $$
     SELECT
         EXISTS (
@@ -180,8 +184,8 @@ AS $$
             FROM
                 public.operators
             WHERE
-                auth_user_id = auth.uid()
-                AND auth_user_id IS NOT NULL
+                auth_user_id IS NOT NULL
+                AND auth_user_id = (SELECT auth.uid())
                 AND is_admin = TRUE
         );
 $$;
@@ -193,42 +197,152 @@ DROP FUNCTION IF EXISTS public.get_my_operator_id;
 CREATE FUNCTION public.get_my_operator_id()
 RETURNS uuid
 LANGUAGE sql STABLE
+SET search_path = ''
 AS $$
-    SELECT 
-        id 
-    FROM 
+    SELECT
+        id
+    FROM
         public.operators
-    WHERE 
-        auth_user_id = auth.uid()
-        AND auth_user_id IS NOT NULL;
+    WHERE
+        auth_user_id IS NOT NULL
+        AND auth_user_id = (SELECT auth.uid());
 $$;
 
 -- Name: get_my_operator_profile(); Type: FUNCTION DROP; Schema: public; Owner: -
 DROP FUNCTION IF EXISTS public.get_my_operator_profile;
 
 -- Name: get_my_operator_profile(); Type: FUNCTION; Schema: public; Owner: -
-CREATE FUNCTION public.get_my_operator_profile() RETURNS TABLE (
+CREATE FUNCTION public.get_my_operator_profile()
+RETURNS TABLE (
     id uuid,
+    auth_user_id uuid,
     first_name text,
     last_name text,
     nickname text,
+    active boolean,
     is_admin boolean,
-    active boolean
+    created_at timestamp with time zone,
+    created_by uuid,
+    created_by_first_name text,
+    created_by_last_name text,
+    created_by_nickname text,
+    updated_at timestamp with time zone,
+    updated_by uuid,
+    updated_by_first_name text,
+    updated_by_last_name text,
+    updated_by_nickname text,
+    deleted_at timestamp with time zone,
+    deleted_by uuid,
+    deleted_by_first_name text,
+    deleted_by_last_name text,
+    deleted_by_nickname text
 )
-LANGUAGE sql SECURITY DEFINER
+LANGUAGE sql
+SET search_path = ''
+SECURITY DEFINER
 AS $$
-    SELECT
-        id,
-        first_name,
-        last_name,
-        nickname,
-        is_admin,
-        active
-    FROM
-        operators
-    WHERE
-        auth_user_id = auth.uid()
-        AND auth_user_id IS NOT NULL;
+SELECT
+    o.id,
+    o.auth_user_id,
+    o.first_name,
+    o.last_name,
+    o.nickname,
+    o.active,
+    o.is_admin,
+
+    o.created_at,
+    o.created_by,
+    cb.first_name AS created_by_first_name,
+    cb.last_name AS created_by_last_name,
+    cb.nickname AS created_by_nickname,
+
+    o.updated_at,
+    o.updated_by,
+    ub.first_name AS updated_by_first_name,
+    ub.last_name AS updated_by_last_name,
+    ub.nickname AS updated_by_nickname,
+
+    o.deleted_at,
+    o.deleted_by,
+    db.first_name AS deleted_by_first_name,
+    db.last_name AS deleted_by_last_name,
+    db.nickname AS deleted_by_nickname
+FROM
+    public.operators o
+LEFT JOIN public.operators AS cb ON o.created_by = cb.id
+LEFT JOIN public.operators AS ub ON o.updated_by = ub.id
+LEFT JOIN public.operators AS db ON o.deleted_by = db.id
+WHERE
+    o.auth_user_id IS NOT NULL
+    AND o.auth_user_id = (SELECT auth.uid());
+$$;
+
+-- Name: get_operators_profiles(); Type: FUNCTION DROP; Schema: public; Owner: -
+DROP FUNCTION IF EXISTS public.get_operators_profiles;
+
+-- Name: get_operators_profiles(); Type: FUNCTION; Schema: public; Owner: -
+CREATE FUNCTION public.get_operators_profiles()
+RETURNS TABLE (
+    id uuid,
+    auth_user_id uuid,
+    first_name text,
+    last_name text,
+    nickname text,
+    active boolean,
+    is_admin boolean,
+    created_at timestamp with time zone,
+    created_by uuid,
+    created_by_first_name text,
+    created_by_last_name text,
+    created_by_nickname text,
+    updated_at timestamp with time zone,
+    updated_by uuid,
+    updated_by_first_name text,
+    updated_by_last_name text,
+    updated_by_nickname text,
+    deleted_at timestamp with time zone,
+    deleted_by uuid,
+    deleted_by_first_name text,
+    deleted_by_last_name text,
+    deleted_by_nickname text
+)
+LANGUAGE sql
+SET search_path = ''
+SECURITY DEFINER
+AS $$
+SELECT
+    o.id,
+    o.auth_user_id,
+    o.first_name,
+    o.last_name,
+    o.nickname,
+    o.active,
+    o.is_admin,
+
+    o.created_at,
+    o.created_by,
+    cb.first_name AS created_by_first_name,
+    cb.last_name AS created_by_last_name,
+    cb.nickname AS created_by_nickname,
+
+    o.updated_at,
+    o.updated_by,
+    ub.first_name AS updated_by_first_name,
+    ub.last_name AS updated_by_last_name,
+    ub.nickname AS updated_by_nickname,
+
+    o.deleted_at,
+    o.deleted_by,
+    db.first_name AS deleted_by_first_name,
+    db.last_name AS deleted_by_last_name,
+    db.nickname AS deleted_by_nickname
+FROM
+    public.operators AS o
+LEFT JOIN public.operators AS cb ON o.created_by = cb.id
+LEFT JOIN public.operators AS ub ON o.updated_by = ub.id
+LEFT JOIN public.operators AS db ON o.deleted_by = db.id
+WHERE
+    public.is_admin_user();
 $$;
 
 --------------
@@ -242,12 +356,13 @@ DROP FUNCTION IF EXISTS public.operators_audit;
 CREATE FUNCTION public.operators_audit()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
     DECLARE
         op_id uuid;
         ts timestamp with time zone := now();
     BEGIN
-        SELECT get_my_operator_id() INTO op_id;
+        SELECT public.get_my_operator_id() INTO op_id;
 
         IF (TG_OP = 'INSERT') THEN
             NEW.created_by := op_id;
@@ -289,6 +404,7 @@ DROP FUNCTION IF EXISTS public.block_operators_delete;
 CREATE FUNCTION block_operators_delete()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
     BEGIN
         RAISE EXCEPTION 'Delete not allowed on operators';
@@ -319,7 +435,7 @@ ON public.app_versions
 FOR SELECT
 USING (TRUE);
 
--- operators -- 
+-- operators --
 -- Name: operators; Type: ROW SECURITY; Schema: public; Owner: -
 ALTER TABLE public.operators ENABLE ROW LEVEL SECURITY;
 
@@ -358,8 +474,8 @@ ON public.operators
 FOR SELECT
 USING (
     (
-        (auth_user_id = auth.uid())
-        AND auth_user_id IS NOT NULL
+        auth_user_id IS NOT NULL
+        AND (auth_user_id = (SELECT auth.uid()))
     )
     OR public.is_admin_user()
 );
@@ -372,8 +488,8 @@ ALTER TABLE public.donation_days ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Authenticated_users_full_access"
 ON public.donation_days
 AS RESTRICTIVE
-USING (auth.uid() IS NOT NULL)
-WITH CHECK (auth.uid() IS NOT NULL);
+USING ((SELECT auth.uid()) IS NOT NULL)
+WITH CHECK ((SELECT auth.uid()) IS NOT NULL);
 
 -- donors --
 -- Name: donors; Type: ROW SECURITY; Schema: public; Owner: -
@@ -384,26 +500,26 @@ CREATE POLICY "Authenticated_users_can_delete_donors"
 ON public.donors
 FOR DELETE
 TO authenticated
-USING (auth.uid() IS NOT NULL);
+USING ((SELECT auth.uid()) IS NOT NULL);
 
 -- Name: donors Authenticated users can insert donors; Type: POLICY; Schema: public; Owner: -
 CREATE POLICY "Authenticated_users_can_insert_donors"
 ON public.donors
 FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() IS NOT NULL);
+WITH CHECK ((SELECT auth.uid()) IS NOT NULL);
 
 -- Name: donors Authenticated users can select donors; Type: POLICY; Schema: public; Owner: -
 CREATE POLICY "Authenticated_users_can_select_donors"
 ON public.donors
 FOR SELECT
 TO authenticated
-USING (auth.uid() IS NOT NULL);
+USING ((SELECT auth.uid()) IS NOT NULL);
 
 -- Name: donors Authenticated users can update donors; Type: POLICY; Schema: public; Owner: -
 CREATE POLICY "Authenticated_users_can_update_donors"
 ON public.donors
 FOR UPDATE
 TO authenticated
-USING (auth.uid() IS NOT NULL)
-WITH CHECK (auth.uid() IS NOT NULL);
+USING ((SELECT auth.uid()) IS NOT NULL)
+WITH CHECK ((SELECT auth.uid()) IS NOT NULL);

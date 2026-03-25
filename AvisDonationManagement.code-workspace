@@ -9,5 +9,8 @@
     "dart.analysisExcludedFolders": [
       "build"
     ],
+    "cSpell.words": [
+      "supabase"
+    ],
   }
 }

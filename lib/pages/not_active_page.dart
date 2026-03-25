@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:avis_donation_management/components/avis_theme.dart';
 import 'package:avis_donation_management/components/protected_pages.dart';
 
-class NotActivePage extends ProtectedAvisScaffoldedPage with LoggedCheck {
+class NotActivePage extends ProtectedAvisScaffoldedPage
+    with LoggedCheck, NotActiveCheck {
   NotActivePage({
     super.key,
     required super.appInfo,

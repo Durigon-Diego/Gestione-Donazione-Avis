@@ -1,25 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/helpers/operator_session_controller.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/components/avis_theme.dart';
 import 'package:avis_donation_management/components/protected_pages.dart';
 import 'package:avis_donation_management/components/collapsible_group.dart';
-import 'package:avis_donation_management/helpers/logger_helper.dart';
+import 'package:avis_donation_management/components/operator_details_component.dart';
 
 class OperatorsPage extends ProtectedAvisScaffoldedPage
     with LoggedCheck, AdminCheck {
-  const OperatorsPage({
+  OperatorsPage({
     super.key,
     required super.appInfo,
     required super.connectionStatus,
     required super.operatorSession,
   }) : super(
           title: 'Gestione Operatori',
-          body: const _OperatorsPageBody(),
+          body: _OperatorsPageBody(
+            operatorSession: operatorSession,
+          ),
         );
 }
 
 class _OperatorsPageBody extends StatefulWidget {
-  const _OperatorsPageBody();
+  final OperatorSessionController operatorSession;
+  const _OperatorsPageBody({
+    required this.operatorSession,
+  });
 
   @override
   State<_OperatorsPageBody> createState() => _OperatorsPageBodyState();
@@ -27,7 +35,7 @@ class _OperatorsPageBody extends StatefulWidget {
 
 class _OperatorsPageBodyState extends State<_OperatorsPageBody> {
   late RealtimeChannel _channel;
-  List<Map<String, dynamic>> _operators = [];
+  Map<String, OperatorData> _operatorMap = {};
 
   @override
   void initState() {
@@ -43,12 +51,11 @@ class _OperatorsPageBodyState extends State<_OperatorsPageBody> {
   }
 
   Future<void> _loadOperators() async {
-    final List<Map<String, dynamic>> data = await Supabase.instance.client
-        .from('operators')
-        .select(
-            'id, auth_user_id, is_admin, active, first_name, last_name, nickname');
+    final List<Map<String, dynamic>> data =
+        await Supabase.instance.client.rpc('get_operators_profiles');
+
     setState(() {
-      _operators = _sortOperators(data);
+      _operatorMap = {for (var op in data.map(OperatorData.fromMap)) op.id: op};
     });
   }
 
@@ -67,92 +74,126 @@ class _OperatorsPageBodyState extends State<_OperatorsPageBody> {
             setState(() {
               switch (payload.eventType) {
                 case PostgresChangeEvent.insert:
-                  _operators.add(newOp);
-                  break;
                 case PostgresChangeEvent.update:
-                  final index =
-                      _operators.indexWhere((o) => o['id'] == oldOp['id']);
-                  if (index != -1) _operators[index] = newOp;
+                  OperatorData op = _createOperatorFromMap(newOp, oldOp);
+                  _operatorMap[op.id] = op;
                   break;
                 case PostgresChangeEvent.delete:
-                  _operators.removeWhere((o) => o['id'] == oldOp['id']);
+                  _operatorMap.remove(oldOp['id']);
                   break;
                 default:
                   break;
               }
-              _operators = _sortOperators(_operators);
             });
           },
         )
         .subscribe();
   }
 
-  List<Map<String, dynamic>> _sortOperators(List<Map<String, dynamic>> ops) {
-    int priority(Map<String, dynamic> o) {
-      if (o['auth_user_id'] == null) {
-        return 3;
-      }
-      if (o['is_admin'] == true) {
-        return 0;
-      }
-      if (o['active'] == true) {
-        return 1;
-      }
+  OperatorData _createOperatorFromMap(
+    Map<String, dynamic> newOp,
+    Map<String, dynamic> oldOp,
+  ) {
+    _updateReferences('created_by', newOp, oldOp);
+    _updateReferences('updated_by', newOp, oldOp);
+    _updateReferences('deleted_by', newOp, oldOp);
+
+    return OperatorData.fromMap(newOp);
+  }
+
+  void _updateReferences(
+    String name,
+    Map<String, dynamic> newOp,
+    Map<String, dynamic> oldOp,
+  ) {
+    final String? field = newOp[name];
+    if (field != null &&
+        field != oldOp[name] &&
+        _operatorMap.containsKey(field)) {
+      newOp['${name}_first_name'] = _operatorMap[field]!.firstName;
+      newOp['${name}_last_name'] = _operatorMap[field]!.lastName;
+      newOp['${name}_nickname'] = _operatorMap[field]!.nickname;
+    }
+  }
+
+  List<OperatorData> _sortOperators(Iterable<OperatorData> ops) {
+    List<OperatorData> sorted = ops.toList();
+    int priority(OperatorData o) {
+      if (o.isDeleted) return 3;
+      if (o.isAdmin) return 0;
+      if (o.isActive) return 1;
       return 2;
     }
 
-    ops.sort((a, b) {
+    sorted.sort((a, b) {
       final priorityComparison = priority(a).compareTo(priority(b));
-      if (priorityComparison != 0) {
-        return priorityComparison;
-      }
+      if (priorityComparison != 0) return priorityComparison;
 
-      final nameA = (a['first_name'] ?? '') as String;
-      final nameB = (b['first_name'] ?? '') as String;
+      final nameA = a.firstName;
+      final nameB = b.firstName;
       final firstNameComparison = nameA.compareTo(nameB);
-      if (firstNameComparison != 0) {
-        return firstNameComparison;
-      }
+      if (firstNameComparison != 0) return firstNameComparison;
 
-      final lastA = (a['last_name'] ?? '') as String;
-      final lastB = (b['last_name'] ?? '') as String;
+      final lastA = a.lastName;
+      final lastB = b.lastName;
       final lastNameComparison = lastA.compareTo(lastB);
-      if (lastNameComparison != 0) {
-        return lastNameComparison;
-      }
+      if (lastNameComparison != 0) return lastNameComparison;
 
-      final nickA = (a['nickname'] ?? '') as String;
-      final nickB = (b['nickname'] ?? '') as String;
-
+      final nickA = a.nickname ?? '';
+      final nickB = b.nickname ?? '';
       return nickA.compareTo(nickB);
     });
-    return ops;
+
+    return sorted;
   }
 
-  void _openOperator(Map<String, dynamic>? operatorData) {
-    logInfo('Open operator: ${operatorData?['id'] ?? 'new'}');
-    final args = operatorData != null ? {'operator': operatorData} : null;
-    Navigator.of(context).pushNamed('/account', arguments: args);
+  void _showOperatorDetailsOverlay(OperatorData? operatorData) {
+    logInfo('Open operator: ${operatorData?.id ?? 'new'}');
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.black.withOpacity(0.5),
+        child: Column(
+          children: [
+            AppBar(
+              title: Text(operatorData == null
+                  ? 'Nuovo Operatore'
+                  : 'Modifica Operatore ${operatorData.name}'),
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => entry.remove(),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: OperatorDetailsComponent(
+                  operatorSession: widget.operatorSession,
+                  operatorData: operatorData,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    overlay.insert(entry);
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> admins = [];
-    List<Map<String, dynamic>> active = [];
-    List<Map<String, dynamic>> inactive = [];
-    List<Map<String, dynamic>> deleted = [];
-
-    for (final op in _operators) {
-      if (op['auth_user_id'] == null) {
-        deleted.add(op);
-      } else if (op['active'] == false) {
-        inactive.add(op);
-      } else if (op['is_admin'] == false) {
-        active.add(op);
-      } else {
-        admins.add(op);
-      }
-    }
+    final allOperators = _operatorMap.values;
+    final admins =
+        _sortOperators(allOperators.where((op) => !op.isDeleted && op.isAdmin));
+    final active = _sortOperators(allOperators
+        .where((op) => !op.isDeleted && !op.isAdmin && op.isActive));
+    final inactive = _sortOperators(allOperators
+        .where((op) => !op.isDeleted && !op.isAdmin && !op.isActive));
+    final deleted = _sortOperators(allOperators.where((op) => op.isDeleted));
 
     return Stack(
       children: [
@@ -160,27 +201,27 @@ class _OperatorsPageBodyState extends State<_OperatorsPageBody> {
           children: [
             CollapsibleGroup(
               title: 'Amministratori',
-              operators: admins,
-              onTap: _openOperator,
+              data: admins,
+              elementBuilder: _listElement,
               visible: admins.isNotEmpty,
             ),
             CollapsibleGroup(
-              title: 'Operatori attivi',
-              operators: active,
-              onTap: _openOperator,
+              title: 'Operatori Attivi',
+              data: active,
+              elementBuilder: _listElement,
               visible: active.isNotEmpty,
             ),
             CollapsibleGroup(
-              title: 'Operatori disattivati',
-              operators: inactive,
-              onTap: _openOperator,
+              title: 'Operatori Disattivati',
+              data: inactive,
+              elementBuilder: _listElement,
               initialExpanded: false,
               visible: inactive.isNotEmpty,
             ),
             CollapsibleGroup(
-              title: 'Operatori eliminati',
-              operators: deleted,
-              onTap: _openOperator,
+              title: 'Operatori Eliminati',
+              data: deleted,
+              elementBuilder: _listElement,
               initialExpanded: false,
               visible: deleted.isNotEmpty,
             ),
@@ -191,7 +232,7 @@ class _OperatorsPageBodyState extends State<_OperatorsPageBody> {
           bottom: 16,
           right: 16,
           child: FloatingActionButton(
-            onPressed: () => _openOperator(null),
+            onPressed: () => _showOperatorDetailsOverlay(null),
             tooltip: 'Aggiungi operatore',
             backgroundColor: AvisColors.blue,
             foregroundColor: AvisColors.white,
@@ -199,6 +240,38 @@ class _OperatorsPageBodyState extends State<_OperatorsPageBody> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _listElement(OperatorData operatorData) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      child: ListTile(
+        title: Text(
+          operatorData.name,
+          style: operatorData.isDeleted
+              ? const TextStyle(
+                  decoration: TextDecoration.lineThrough,
+                  color: AvisColors.darkGrey,
+                )
+              : null,
+        ),
+        leading: Icon(
+          operatorData.isDeleted
+              ? operatorData.isAdmin
+                  ? Icons.shield_outlined
+                  : Icons.person_outlined
+              : operatorData.isAdmin
+                  ? Icons.shield
+                  : Icons.person,
+          color: operatorData.isActive ? AvisColors.blue : AvisColors.red,
+        ),
+        tileColor: AvisColors.lightGrey,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        onTap: () => _showOperatorDetailsOverlay(operatorData),
+      ),
     );
   }
 }

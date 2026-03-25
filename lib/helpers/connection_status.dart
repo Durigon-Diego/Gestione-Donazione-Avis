@@ -112,15 +112,25 @@ class ConnectionStatus extends ConnectionStatusController {
   Future<void> _restartSupabaseSocket() async {
     try {
       _cleanupSupabaseSocket();
+
+      final originalURI = Uri.parse(_appInfo.supabaseURL);
+      final isSecure = originalURI.scheme == 'https';
       final uri = Uri(
-        scheme: _appInfo.supabaseURL.startsWith('https') ? 'wss' : 'ws',
-        host: Uri.parse(_appInfo.supabaseURL).host,
-        path: '/realtime/v1',
+        scheme: isSecure ? 'wss' : 'ws',
+        host: originalURI.host,
+        port: originalURI.hasPort
+            ? originalURI.port
+            : isSecure
+                ? 443
+                : 80,
+        path: '/realtime/v1/websocket',
         queryParameters: {
           'apikey': _appInfo.supabaseKey,
           'vsn': '1.0.0',
         },
       );
+
+      logInfo('Creating Supabase socket for uri: $uri');
 
       _socket = _connectWebSocket(uri);
 

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:avis_donation_management/helpers/connection_status_controller.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/components/avis_drawer.dart';
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
@@ -26,12 +27,15 @@ void main() {
 
     testWidgets('displays base items for active operator', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession = FakeOperatorSession(
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
         firstName: 'Mario',
         lastName: 'Rossi',
-        isActive: true,
-        isAdmin: false,
       );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -117,12 +121,15 @@ void main() {
 
     testWidgets('displays all items for active admin', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession = FakeOperatorSession(
+      OperatorData operatorData = OperatorData(
+        id: 'ID_A',
+        authUserId: 'auth_user_id_A',
+        isAdmin: true,
+        isActive: true,
         firstName: 'Admin',
         lastName: 'User',
-        isActive: true,
-        isAdmin: true,
       );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -222,13 +229,16 @@ void main() {
 
     testWidgets('displays limited items for inactive operator', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession = FakeOperatorSession(
+      OperatorData operatorData = OperatorData(
+        id: 'ID_A',
+        authUserId: 'auth_user_id_A',
+        isAdmin: false,
+        isActive: false,
         firstName: 'Giulia',
         lastName: 'Bianchi',
         nickname: 'GB',
-        isActive: false,
-        isAdmin: false,
       );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -314,12 +324,15 @@ void main() {
 
     testWidgets('displays extra items for inactive admin', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession = FakeOperatorSession(
+      OperatorData operatorData = OperatorData(
+        id: 'ID_L',
+        authUserId: 'auth_user_id_L',
+        isAdmin: true,
+        isActive: false,
         firstName: 'Luca',
         lastName: 'Verdi',
-        isActive: false,
-        isAdmin: true,
       );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         routes: {
@@ -419,12 +432,15 @@ void main() {
 
     testWidgets('reacts to dynamic session changes', (tester) async {
       final fakeAppInfo = FakeAppInfo();
-      final fakeOperatorSession = FakeOperatorSession(
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: false,
         firstName: 'Mario',
         lastName: 'Rossi',
-        isActive: false,
-        isAdmin: false,
       );
+      final fakeOperatorSession = FakeOperatorSession(data: operatorData);
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
@@ -447,23 +463,52 @@ void main() {
       expect(find.byIcon(Icons.lock), findsOneWidget);
       expect(find.text('Gestione Operatori'), findsNothing);
 
-      fakeOperatorSession.setState(isActive: true);
+      operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.lock), findsNothing);
       expect(find.byIcon(Icons.water_drop), findsOneWidget);
 
-      fakeOperatorSession.setState(isAdmin: true);
+      operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: true,
+        isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await tester.pumpAndSettle();
       expect(find.text('Gestione Operatori'), findsOneWidget);
 
-      fakeOperatorSession.setState(
+      operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: true,
+        isActive: true,
         firstName: 'Luigi',
         lastName: 'Longobardi',
       );
+      fakeOperatorSession.setState(data: operatorData);
       await tester.pumpAndSettle();
       expect(find.text('Luigi Longobardi'), findsOneWidget);
 
-      fakeOperatorSession.setState(isAdmin: false, isActive: false);
+      operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
+        isAdmin: false,
+        isActive: false,
+        firstName: 'Luigi',
+        lastName: 'Longobardi',
+      );
+      fakeOperatorSession.setState(data: operatorData);
       await tester.pumpAndSettle();
       expect(find.text('Gestione Operatori'), findsNothing);
       expect(find.byIcon(Icons.lock), findsOneWidget);
@@ -557,12 +602,16 @@ void main() {
       'reacts to dynamic session changes and handles connectivity loss',
       (tester) async {
         final fakeAppInfo = FakeAppInfo();
-        final fakeOperatorSession = FakeOperatorSession(
+
+        OperatorData operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: false,
           firstName: 'Mario',
           lastName: 'Rossi',
-          isActive: false,
-          isAdmin: false,
         );
+        final fakeOperatorSession = FakeOperatorSession(data: operatorData);
 
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -585,23 +634,52 @@ void main() {
         expect(find.byIcon(Icons.lock), findsOneWidget);
         expect(find.text('Gestione Operatori'), findsNothing);
 
-        fakeOperatorSession.setState(isActive: true);
+        operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: true,
+          firstName: 'Mario',
+          lastName: 'Rossi',
+        );
+        fakeOperatorSession.setState(data: operatorData);
         await tester.pumpAndSettle();
         expect(find.byIcon(Icons.lock), findsNothing);
         expect(find.byIcon(Icons.water_drop), findsOneWidget);
 
-        fakeOperatorSession.setState(isAdmin: true);
+        operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: true,
+          isActive: true,
+          firstName: 'Mario',
+          lastName: 'Rossi',
+        );
+        fakeOperatorSession.setState(data: operatorData);
         await tester.pumpAndSettle();
         expect(find.text('Gestione Operatori'), findsOneWidget);
 
-        fakeOperatorSession.setState(
+        operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: true,
+          isActive: true,
           firstName: 'Luigi',
           lastName: 'Longobardi',
         );
+        fakeOperatorSession.setState(data: operatorData);
         await tester.pumpAndSettle();
         expect(find.text('Luigi Longobardi'), findsOneWidget);
 
-        fakeOperatorSession.setState(isAdmin: false, isActive: false);
+        operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: false,
+          firstName: 'Luigi',
+          lastName: 'Longobardi',
+        );
+        fakeOperatorSession.setState(data: operatorData);
         await tester.pumpAndSettle();
         expect(find.text('Gestione Operatori'), findsNothing);
         expect(find.byIcon(Icons.lock), findsOneWidget);
@@ -648,7 +726,15 @@ void main() {
         );
 
         // Simulate connection restored and operator now active
-        fakeOperatorSession.setState(isActive: true);
+        operatorData = OperatorData(
+          id: 'ID_M',
+          authUserId: 'auth_user_id_M',
+          isAdmin: false,
+          isActive: true,
+          firstName: 'Luigi',
+          lastName: 'Longobardi',
+        );
+        fakeOperatorSession.setState(data: operatorData);
         fakeConnectionStatus.setState(ServerStatus.connected);
         await tester.pumpAndSettle();
         expect(

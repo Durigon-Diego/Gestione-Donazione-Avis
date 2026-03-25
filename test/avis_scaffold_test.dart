@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:avis_donation_management/helpers/operator_data.dart';
 import 'package:avis_donation_management/components/avis_bottom_navigation_bar.dart';
 import 'package:avis_donation_management/components/avis_scaffold.dart';
-
 import 'fake_components/fake_app_info.dart';
 import 'fake_components/fake_connection_status_controller.dart';
 import 'fake_components/fake_operator_session.dart';
@@ -10,13 +10,13 @@ import 'fake_components/fake_operator_session.dart';
 void main() {
   group('AvisScaffold', () {
     late FakeAppInfo appInfo;
-    late FakeConnectionStatus connectionStatus;
-    late FakeOperatorSession operatorSession;
+    late FakeConnectionStatus fakeConnectionStatus;
+    late FakeOperatorSession fakeOperatorSession;
 
     setUp(() {
       appInfo = FakeAppInfo();
-      connectionStatus = FakeConnectionStatus();
-      operatorSession = FakeOperatorSession();
+      fakeConnectionStatus = FakeConnectionStatus();
+      fakeOperatorSession = FakeOperatorSession();
     });
 
     testWidgets('renders correctly with required parameters and no bottomNav',
@@ -25,8 +25,8 @@ void main() {
         MaterialApp(
           home: AvisScaffold(
             appInfo: appInfo,
-            connectionStatus: connectionStatus,
-            operatorSession: operatorSession,
+            connectionStatus: fakeConnectionStatus,
+            operatorSession: fakeOperatorSession,
             title: 'Titolo Test',
             body: const Text('Contenuto corpo'),
           ),
@@ -66,8 +66,8 @@ void main() {
         MaterialApp(
           home: AvisScaffold(
             appInfo: appInfo,
-            connectionStatus: connectionStatus,
-            operatorSession: operatorSession,
+            connectionStatus: fakeConnectionStatus,
+            operatorSession: fakeOperatorSession,
             title: 'Con Nav',
             body: const Text('Body test'),
             bottomNavData: bottomNavData,
@@ -88,19 +88,22 @@ void main() {
     });
 
     testWidgets('drawer opens and contains user name and role', (tester) async {
-      operatorSession.setState(
-        firstName: 'Mario',
-        lastName: 'Rossi',
+      OperatorData operatorData = OperatorData(
+        id: 'ID_M',
+        authUserId: 'auth_user_id_M',
         isAdmin: true,
         isActive: true,
+        firstName: 'Mario',
+        lastName: 'Rossi',
       );
+      fakeOperatorSession.setState(data: operatorData);
 
       await tester.pumpWidget(
         MaterialApp(
           home: AvisScaffold(
             appInfo: appInfo,
-            connectionStatus: connectionStatus,
-            operatorSession: operatorSession,
+            connectionStatus: fakeConnectionStatus,
+            operatorSession: fakeOperatorSession,
             title: 'Drawer Test',
             body: const SizedBox(),
           ),
