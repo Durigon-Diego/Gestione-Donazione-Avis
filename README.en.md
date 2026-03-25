@@ -4,7 +4,7 @@
 -  [🇮🇹 Italiano](README.md)
 
 [![Build and Test](https://github.com/Durigon-Diego/Gestione-Donazione-Avis/actions/workflows/flutter_test_and_badge.yml/badge.svg)](https://github.com/Durigon-Diego/Gestione-Donazione-Avis/actions/workflows/flutter_test_and_badge.yml)
-[![Coverage](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20260325-233200-29895.svg)](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20260325-233200-29895/index.html) <!-- badge::coverage -->
+[![Coverage](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20260325-233620-2976.svg)](https://durigon-diego.github.io/Gestione-Donazione-Avis/coverage/20260325-233620-2976/index.html) <!-- badge::coverage -->
 
 **AVIS Donation Management** is a cross-platform Flutter app designed to simplify and digitize the workflow of AVIS donor days.  
 The app allows operators to securely log in, manage each operational step in real-time, and access essential data in an efficient and organized way.
